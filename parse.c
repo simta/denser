@@ -43,26 +43,26 @@ struct rr {
     int
 _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 {
-    int			i;
+    int			ns;
     struct dnsr_header	*h;
     struct sockaddr_in  *sin;
     uint16_t		flags;
     char		word[ DNSR_MAX_NAME ];
 
-    DEBUG( fprintf( stderr, "verifying result\n" ));
+    
 
     /* Determine which server responded */
-    for ( i = 0; i < dnsr->d_nscount; i++ ) {
+    for ( ns = 0; ns < dnsr->d_nscount; ns++ ) {
 
 	/* Skip servers we've not asked */
-	if ( ! dnsr->d_nsinfo[ i ].ns_asked ) {
-	    DEBUG( fprintf( stderr, "ns %d not asked\n", i ));
+	if ( ! dnsr->d_nsinfo[ ns ].ns_asked ) {
+	    DEBUG( fprintf( stderr, "ns %d not asked\n", ns ));
 	    continue;
 	}
 
 	/* Do not check sin_len since it might not be defined */
 	/* This check is not required by an RFC */
-        sin = (struct sockaddr_in *)&(dnsr->d_nsinfo[ i ].ns_sa);
+        sin = (struct sockaddr_in *)&(dnsr->d_nsinfo[ ns ].ns_sa);
 	if ( memcmp( &sin->sin_addr, 
 		    &reply_from->sin_addr, sizeof( reply_from->sin_addr )) == 0
 		&& memcmp( &sin->sin_family, 
@@ -71,18 +71,18 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 		&& memcmp( &sin->sin_port, 
 		    &reply_from->sin_port,
 		    sizeof( reply_from->sin_port )) == 0 ) {
-	    dnsr->d_nsresp = i;
-	    DEBUG( fprintf( stderr, "ns %d responded\n", i ));
+	    dnsr->d_nsresp = ns;
+	    DEBUG( fprintf( stderr, "ns %d responded\n", ns ));
 	    break;
 	}
     }
-    if ( i < 0 || i >= dnsr->d_nscount ) {
-	DEBUG( fprintf( stderr, "%d: invalid NS response\n", i ));
+    if ( ns < 0 || ns >= dnsr->d_nscount ) {
+	DEBUG( fprintf( stderr, "%d: invalid NS response\n", ns ));
 	return( DNSR_ERROR_NS_INVALID );
     }
 
     /* Check ID */
-    if ( dnsr->d_id != ( dnsr->d_nsinfo[ i ].ns_id ^
+    if ( dnsr->d_id != ( dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_id ^
 	    ntohs( ((struct dnsr_header*)(resp))->h_id ))) {
 	DEBUG( fprintf( stderr, "ID does not match\n" ));
 	return( DNSR_ERROR_NS_INVALID );
@@ -94,7 +94,7 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
     DEBUG( _dnsr_display_header( h ));
 
     /* RFC section 4.1.1 Header section format
-     * OPCODE, RD, and QD should match question, therefor we can't check
+     * OPCODE, RD, and QD should match question
      *
      * Z must be zero in all responses.
      */
@@ -109,9 +109,11 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
     /* Check RA */
     if ( !( flags & DNSR_RECURSION_AVAILABLE )) {
 	DEBUG( fprintf( stderr, "Recursion not available\n" ));
+        /* FIXME: this isn't right, but it should be checked somewhere 
         if ( flags & DNSR_RECURSION_DESIRED ) {
 	    return( DNSR_ERROR_NO_RECURSION );
         }
+        */
     }
     /* Check TC */
     if ( flags & DNSR_TRUNCATION ) {
@@ -126,40 +128,48 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
     }
     */
 
+    /* Check that the answer was for our question */
+    if ( memcmp( (void *)(dnsr->d_query + sizeof( struct dnsr_header )),
+		(void *)(resp + sizeof( struct dnsr_header )),
+		dnsr->d_questionlen - sizeof( struct dnsr_header ) ) != 0 ) {
+	DEBUG( fprintf( stderr, "Response question does not match query\n" ));
+	return( DNSR_ERROR_QUESTION_WRONG );
+    }
+
+    return( 0 );
+}
+
+    int
+_dnsr_validate_result( DNSR *dnsr, struct dnsr_result *result ) {
     /* Check RCODE */
-    switch( flags & DNSR_RCODE ) {
+    switch( result->r_rcode ) {
     case DNSR_RC_OK:
 	break;
 
-    case DNSR_RC_FORMATERR:
+    case DNSR_RC_FORMERR:
 	DEBUG( fprintf( stderr, "Format error: The name server was unable "
 	    "to interpret the query\n" ));
 	return( DNSR_ERROR_FORMAT );
 
-    case DNSR_RC_SVRERR:
+    case DNSR_RC_SERVFAIL:
 	DEBUG( fprintf( stderr, "Server error\n" ));
 	return( DNSR_ERROR_SERVER );
 
-    case DNSR_RC_NAMEERR:
-	/* RFC 1035 4.1:
-	 * Name Error - Meaningful only for
-	 * responses from an authoritative name
-	 * server, this code signifies that the
-	 * domain name referenced in the query does
-	 * not exist.
-	 *
-	 * If authortative, we want to pass back to caller, otherwise
-	 * we throw away response.
-	 */
-
-	if ( flags & DNSR_AUTHORITATIVE_ANSWER ) {
-	    break;
-	}
+    case DNSR_RC_NXDOMAIN:
+        /* RFC 2308 2.1.1 Special Handling of Name Error
+         * Some resolvers incorrectly continue processing if the authoritative
+         * answer flag is not set, looping until the query retry threshold is
+         * exceeded and then returning SERVFAIL.
+         */
+        DEBUG( fprintf( stderr, "NXDOMAIN\n" ));
 	return( DNSR_ERROR_NAME );
 
     case DNSR_RC_NOTIMP:
 	/* Server Error */
 	DEBUG( fprintf( stderr, "Not implemented\n" ));
+        if ( dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_edns == DNSR_EDNS_UNKNOWN ) {
+            dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_edns = DNSR_EDNS_BAD;
+        }
 	return( DNSR_ERROR_NOT_IMPLEMENTED );
 
     case DNSR_RC_REFUSED:
@@ -167,18 +177,14 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 	DEBUG( fprintf( stderr, "Refused\n" ));
 	return( DNSR_ERROR_REFUSED );
 
+    case DNSR_RC_BADVERS:
+        DEBUG( fprintf( stderr, "Bad EDNS version\n" ));
+        dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_edns = DNSR_EDNS_BAD;
+        return( DNSR_ERROR_NOT_IMPLEMENTED );
+
     default:
 	/* Unknown response code */
 	DEBUG( fprintf( stderr, "Unknown response code\n" ));
-	return( DNSR_ERROR_RCODE );
-    }
-
-    /* Check that the answer was for our question */
-    if ( memcmp( (void *)(dnsr->d_query + sizeof( struct dnsr_header )),
-		(void *)(resp + sizeof( struct dnsr_header )),
-		dnsr->d_querylen - sizeof( struct dnsr_header ) ) != 0 ) {
-	DEBUG( fprintf( stderr, "Response question does not match query\n" ));
-	return( DNSR_ERROR_QUESTION_WRONG );
     }
 
     return( 0 );
@@ -201,10 +207,11 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
     memset( result, 0, sizeof( struct dnsr_result ));
 
     h = (struct dnsr_header *)resp;
+    result->r_rcode = ntohs( h->h_flags ) & DNSR_RCODE;
     result->r_ancount = ntohs( h->h_ancount );
     result->r_nscount = ntohs( h->h_nscount );
     result->r_arcount = ntohs( h->h_arcount );
-    resp_cur = resp + dnsr->d_querylen;
+    resp_cur = resp + dnsr->d_questionlen;
 
     if ( result->r_ancount > 0 ) {
 	if (( result->r_answer =  malloc( sizeof( struct dnsr_rr ) *
@@ -244,7 +251,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
 
     DEBUG( fprintf( stderr, "Answer section\n" ));
     for ( i = 0; i < result->r_ancount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_answer[ i ], resp, &resp_cur,
+	if ( _dnsr_parse_rr( dnsr, &result->r_answer[ i ], result, resp, &resp_cur,
 		resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -280,7 +287,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
 
     DEBUG( fprintf( stderr, "\nNS Authority\n"));
     for ( i = 0; i < result->r_nscount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_ns[ i ], resp, &resp_cur,
+	if ( _dnsr_parse_rr( dnsr, &result->r_ns[ i ], result, resp, &resp_cur,
 		resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -288,7 +295,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
     }
 
     for ( i = 0; i < result->r_arcount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_additional[ i ], resp,
+	if ( _dnsr_parse_rr( dnsr, &result->r_additional[ i ], result, resp,
 		&resp_cur, resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -303,8 +310,8 @@ error:
 }
 
     int
-_dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, char *resp_begin,
-    char **resp_cur, int resplen )
+_dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
+        char *resp_begin, char **resp_cur, int resplen )
 
 {
     char		*dn_cur;
@@ -498,6 +505,74 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, char *resp_begin,
             break;
         }
 
+    case DNSR_TYPE_OPT:
+        DEBUG( fprintf( stderr, "edns: max udp payload: %d\n", rr->rr_class ));
+        dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_udp = rr->rr_class;
+        rr->rr_opt.opt_udp = rr->rr_class;
+        rr->rr_opt.opt_rcode = ( rr->rr_ttl >> 24 );
+        result->r_rcode |= ( rr->rr_opt.opt_rcode << 4 );
+        DEBUG( fprintf( stderr, "edns: real rcode: %d\n", result->r_rcode ));
+        rr->rr_opt.opt_version = ( rr->rr_ttl >> 16 & 0x00ff );
+        rr->rr_opt.opt_flags = ( rr->rr_ttl & 0x0000ffff );
+        DEBUG( fprintf( stderr, "edns: flags: %x\n", rr->rr_ttl ));
+        rr->rr_ttl = 0;
+        rr->rr_class = DNSR_CLASS_IN;
+        if ( rr->rr_rdlength > 0 ) {
+            struct edns_opt *opt;
+            char *opt_end = *resp_cur + rr->rr_rdlength;
+
+            if ( opt_end > resp_end ) {
+                DEBUG( fprintf( stderr, "parse_rr: truncated EDNS rdata\n" ));
+            }
+
+            while( *resp_cur < opt_end ) {
+                if (( *resp_cur + ( 2 * sizeof( uint16_t ))) > resp_end ) {
+                    DEBUG( fprintf( stderr,
+                            "parse_rr: no room for EDNS option\n" ));
+                    dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+                    return( -1 );
+                }
+                if (( opt = malloc( sizeof( struct edns_opt ))) == NULL ) {
+                    DEBUG( perror( "malloc" ));
+                    dnsr->d_errno = DNSR_ERROR_SYSTEM;
+                    return( -1 );
+                }
+                memset( opt, 0, sizeof( struct edns_opt ));
+                memcpy( &opt->opt_code, *resp_cur, sizeof( uint16_t ));
+                opt->opt_code = ntohs( opt->opt_code );
+                *resp_cur += sizeof( uint16_t );
+                memcpy( &opt->opt_len, *resp_cur, sizeof( uint16_t ));
+                opt->opt_len = ntohs( opt->opt_len );
+                *resp_cur += sizeof( uint16_t );
+                if (( *resp_cur + opt->opt_len ) > resp_end ) {
+                    DEBUG( fprintf( stderr,
+                        "parse_rr: no room for EDNS option value\n" ));
+                    dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+                    return( -1 );
+                }
+                if ( opt->opt_len > 0 ) {
+                    if (( opt->opt_data = malloc( opt->opt_len )) == NULL ) {
+                        DEBUG( perror( "malloc" ));
+                        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+                        return( -1 );
+                    }
+                    memset( opt->opt_data, 0, opt->opt_len );
+                    memcpy( opt->opt_data, *resp_cur, opt->opt_len );
+                    *resp_cur += opt->opt_len;
+                }
+                if ( rr->rr_opt.opt_opt == NULL ) {
+                    rr->rr_opt.opt_opt = opt;
+                } else {
+                    struct edns_opt *last;
+                    for ( last = rr->rr_opt.opt_opt;
+                            last->opt_next != NULL ; last = last->opt_next );
+                    last->opt_next = opt;
+                }
+                DEBUG( fprintf( stderr, "edns option %d\n", opt->opt_code ));
+            }
+        }
+        break;
+
     case DNSR_TYPE_SRV:
 	if ( *resp_cur + ( 3 * sizeof( int16_t )) > resp_end ) {
 	    DEBUG( fprintf( stderr, "parse_rr: no room for header\n" ));
@@ -612,13 +687,13 @@ _dnsr_display_header( struct dnsr_header *h)
     case DNSR_RC_OK: 
 	printf( "( No error condition )\n" );
 	break;
-    case DNSR_RC_FORMATERR:
+    case DNSR_RC_FORMERR:
 	printf( "( Format error )\n" );
 	break;
-    case DNSR_RC_SVRERR:
+    case DNSR_RC_SERVFAIL:
 	printf( "( Server failure )\n" );
 	break;
-    case DNSR_RC_NAMEERR:
+    case DNSR_RC_NXDOMAIN:
 	printf( "( Name error )\n" );
 	break;
     case DNSR_RC_NOTIMP:
@@ -701,12 +776,13 @@ _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
 	offset = ntohs( offset );
 
 	/* if first two bits are 11, then the remaining 6 bits are offset */
-	if ( offset & DNSR_OFFSET ) {
+	if (( offset & DNSR_OFFSET ) == DNSR_OFFSET ) {
 	    /* Compression */
 	    offset &= ~DNSR_OFFSET;
 
 	    if ( offset > resplen ) {
-		DEBUG( fprintf( stderr, "labels_to_name: invalid offset\n" ));
+		DEBUG( fprintf( stderr, "labels_to_name: invalid offset: %d\n",
+                        offset ));
 		dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
 		return( -1 );
 	    }
@@ -720,8 +796,9 @@ _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
 	    (*resp_cur) += 2;
 	    return( 0 );
 
-	} else {
-
+	} else if ( offset & DNSR_EXTENDED_LABEL ) {
+            fprintf( stderr, "labels_to_name: extended label found\n" );
+        } else {
 	    if ( *resp_cur >= resp_begin + resplen ) {
 		DEBUG( fprintf( stderr, "labels_to_string: no resp\n" ));
 		dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;

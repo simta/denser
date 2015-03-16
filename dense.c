@@ -58,11 +58,13 @@ print_rr( struct dnsr_rr *rr )
 {
     struct ip_info	*ip_info;
 
-    printf( "%s\t", rr->rr_name ); 
+    if( rr->rr_type != DNSR_TYPE_OPT ) {
+        printf( "%s\t", rr->rr_name ); 
 
-    printf( "%dd %02dh %02dm %02ds", rr->rr_ttl / 86400,
-	( rr->rr_ttl % 86400 ) / 3600, ( rr->rr_ttl % 3600 ) / 60,
-	rr->rr_ttl % 60 );
+        printf( "%dd %02dh %02dm %02ds", rr->rr_ttl / 86400,
+            ( rr->rr_ttl % 86400 ) / 3600, ( rr->rr_ttl % 3600 ) / 60,
+            rr->rr_ttl % 60 );
+    }
 
     switch( rr->rr_type ) {
     case DNSR_TYPE_CNAME:
@@ -164,6 +166,25 @@ print_rr( struct dnsr_rr *rr )
 	break;
 	}
 
+    case DNSR_TYPE_OPT:
+        {
+        struct edns_opt *opt;
+        printf( "EDNS OPT:\tversion %d udp %d\n", rr->rr_opt.opt_version,
+                rr->rr_opt.opt_udp );
+        for ( opt = rr->rr_opt.opt_opt ; opt != NULL ; opt = opt->opt_next ) {
+            printf( "\t%d\t", opt->opt_code );
+            int i;
+            for ( i = 0 ; i < opt->opt_len ; i++ ) {
+                printf( "%x", opt->opt_data[i] );
+            }
+            printf( "\t" );
+            for ( i = 0 ; i < opt->opt_len ; i++ ) {
+                printf( "%c", opt->opt_data[i] );
+            }
+            printf( "\n" );
+        }
+        break;
+        }
     default:      
 	printf( "\t%d: unknown type\n", rr->rr_type );
 	break;

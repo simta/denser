@@ -5,14 +5,15 @@
 #define DNSR_MAX_HOSTNAME 253	/* Max conventional ASCII representation */
 #define DNSR_MAX_NAME	255  
 #define DNSR_MAX_STRING	256     /* rfc 1034 3.3 */
-#define DNSR_MAX_UDP	512    
+#define DNSR_MAX_UDP_BASIC   512 
+#define DNSR_MAX_UDP	1280    /* RFC 6891 6.2.3 */
 #define DNSR_MAX_NS	4	/* Max number of name servers */
 #define DNSR_MAX_RDATA	(uint16_t)65535
 #define DNSR_MAX_ERRNO	31	/* Highest valid error number */
 #define DNSR_MAX_TYPE	255	/* Highest valid type */
 #define DNSR_MAX_CLASS	4	/* Highest valid class */
 
-/* RR types ( rfc 1035 3.2.2 ) */
+/* RR types ( RFC 1035 3.2.2 ) */
 #define DNSR_TYPE_A	1	/* Host address */
 #define DNSR_TYPE_NS 	2	/* Authoritative name server */
 #define DNSR_TYPE_MD 	3	/* Mail destination */
@@ -31,6 +32,7 @@
 #define DNSR_TYPE_TXT	16	/* Text string */
 #define DNSR_TYPE_AAAA	28	/* IPv6 AAAA type */
 #define DNSR_TYPE_SRV	33	/* Service Record RFC 2728 */
+#define DNSR_TYPE_OPT   41      /* EDNS0 OPT pseudo-RR, RFC 6891 */
 #define DNSR_TYPE_ALL	255	/* All records */
 
 /* RR query types ( rfc 1035 3.2.3 ) */
@@ -39,14 +41,14 @@
 //#define DNSR_TYPE_MAILA 254	/* Request for mail agent records */
 //#define DNSR_TYPE_ALL 255	/* Request all records */
 
-/* RR class values ( rfc 1035 3.2.4 ) */
+/* RR class values ( RFC 6895 3.2 ) */
 #define DNSR_CLASS_IN 	1		/* Internet */
-#define DNSR_CLASS_CS 	2		/* CSNET */
 #define DNSR_CLASS_CH 	3		/* CHAOS */
 #define DNSR_CLASS_HS 	4		/* HESIOD */
 
-/* RR qclass values ( rfc 1035 3.2.5 ) */
-#define DNSR_CLASS_ALL 255	/* Any class */
+/* RR qclass values ( RFC 6895 3.2 ) */
+#define DNSR_CLASS_NONE 254     /* RFC 2136 Dynamic Updates */
+#define DNSR_CLASS_ALL  255	/* Any class */
 
 /* DNSR flags */
 #define DNSR_FLAG_ON			0	/* Turn flag on */
@@ -97,6 +99,7 @@
 #define DNSR_ERROR_UNKNOWN		32	/* Unknown error */
 
 struct dnsr_result {
+    uint16_t                    r_rcode;
     unsigned int 		r_ancount;
     struct dnsr_rr 		*r_answer;
     unsigned int		r_nscount;
@@ -108,6 +111,8 @@ struct dnsr_result {
 struct nsinfo {
     uint16_t		        ns_id;
     int                         ns_asked;
+    int                         ns_edns;
+    uint16_t                    ns_udp;
     struct sockaddr_storage     ns_sa;
 };
 
@@ -116,7 +121,8 @@ typedef struct {
     uint16_t		d_flags;
     char		d_dn[ DNSR_MAX_NAME + 1 ];
     char		d_query[ DNSR_MAX_UDP ];
-    int			d_querylen;
+    size_t              d_questionlen;
+    size_t              d_querylen;
     int			d_querysent;
     int			d_state;
     int			d_errno;
@@ -248,6 +254,22 @@ struct rr_srv {
     char	srv_target[ DNSR_MAX_NAME + 1 ];
 };
 
+/* RFC 6891 OPT record */
+struct edns_opt {
+    uint16_t            opt_code;
+    uint16_t            opt_len;
+    uint8_t             *opt_data;
+    struct edns_opt     *opt_next;
+};
+
+struct rr_opt {
+    uint8_t             opt_rcode;
+    uint8_t             opt_version;
+    uint16_t            opt_flags;
+    uint16_t            opt_udp;
+    struct edns_opt     *opt_opt;
+};
+
 struct ip_info {
     struct sockaddr_storage     ip_sa;
     struct ip_info              *ip_next;
@@ -297,6 +319,8 @@ struct dnsr_rr {
 #define rr_aaaa rr_u.rd_aaaa
 	struct rr_srv	rd_srv;
 #define rr_srv rr_u.rd_srv
+        struct rr_opt   rd_opt;
+#define rr_opt rr_u.rd_opt
     } rr_u; 
 };
 

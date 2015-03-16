@@ -40,7 +40,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 {
     char		resp[ DNSR_MAX_UDP ];
     char		*resp_tcp = NULL;
-    int			rc, resplen, resp_errno = DNSR_ERROR_NONE;
+    int			rc, error, resplen, resp_errno = DNSR_ERROR_NONE;
     fd_set		fdset;
     struct dnsr_result	*result = NULL;
     struct timeval	cur;	/* Current time */
@@ -74,6 +74,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
     memset( &resp, 0, DNSR_MAX_UDP );
 
     while ( eventlist[ dnsr->d_state ].e_type != DNSR_STATE_DONE ) {
+        error = 0;
 
 	switch( eventlist[ dnsr->d_state ].e_type ) {
 
@@ -180,18 +181,20 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 
 	    if (( rc = _dnsr_validate_resp( dnsr, resp, &reply_from )) != 0 ) {
 		DEBUG( dnsr_perror( dnsr, "_dnsr_validate_resp" ));
-		if ( rc == DNSR_ERROR_TRUNCATION ) {
+                if ( rc == DNSR_ERROR_NS_INVALID ) {
+                    break;
+		} else if ( rc == DNSR_ERROR_TRUNCATION ) {
 		    if ((( resp_tcp = _dnsr_send_query_tcp( dnsr,
-			    &resplen )) == NULL )) {
+			    dnsr->d_nsresp, &resplen )) == NULL )) {
 			return( NULL );
 		    }
 		    if (( _dnsr_validate_resp( dnsr, resp_tcp,
 			    &reply_from )) != 0 ) {
-			break;
+                        error = 1;        
 		    }
 
 		} else {
-		    break;
+                    error = 1;
 		}
 	    }
 
@@ -218,11 +221,22 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 		free( resp_tcp );
 		resp_tcp = NULL;
 	    }
+            if (( rc = _dnsr_validate_result( dnsr, result )) != 0 ) {
+                DEBUG( fprintf( stderr, "_dnsr_validate_result failed\n" ));
+                if ( rc == DNSR_ERROR_NAME ) {
+                    return( result );
+                }
+                error = 1;
+            }
 	    if ( _dnsr_match_additional( dnsr, result ) != 0 ) {
 		DEBUG( fprintf( stderr, "_dnsr_match_additional failed\n" ));
-		free( result );
+		dnsr_free_result( result );
 		return( NULL );
 	    }
+            if ( error == 1 ) {
+                dnsr_free_result( result );
+                break;
+            }
 	    return( result );
 
 	case DNSR_STATE_ASK:

@@ -79,7 +79,7 @@ struct lookup lookup_type[] = {
     { 38,     -1 },
     { 39,     -1 },
     { 40,     -1 },
-    { 41,     -1 },
+    { DNSR_TYPE_OPT,    DNSR_TYPE_OPT },    /* EDNS OPT, RFC 6891 */
     { 42,     -1 },
     { 43,     -1 },
     { 44,     -1 },
@@ -299,7 +299,7 @@ struct lookup lookup_type[] = {
 struct lookup lookup_class[] = {
     { 0,		-1 },
     { DNSR_CLASS_IN,	1 },		/* Internet */
-    { DNSR_CLASS_CS,	2 },		/* CSNET */
+    { 2,                -1 },           /* Available */
     { DNSR_CLASS_CH,	3 },		/* CHAOS */
     { DNSR_CLASS_HS, 	4 }		/* HESIOD */
 };
@@ -391,6 +391,7 @@ _dn_to_labels( DNSR *dnsr, char *dn, char *labels )
     /* Check for and remove trailing '.' */
     len = strlen( dn );
     if ( len > DNSR_MAX_HOSTNAME ) {
+        DEBUG( fprintf( stderr, "dn_to_labels: dn too long\n" ));
 	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
 	return( -1 );
     }
@@ -459,22 +460,44 @@ _dn_to_labels( DNSR *dnsr, char *dn, char *labels )
     int
 _dnsr_send_query( DNSR *dnsr, int ns )
 {
-    struct dnsr_header		*h;
+    struct dnsr_header	    *h;
+    char                    *query;
+    char                    buf[ DNSR_MAX_UDP ];
+    size_t                  querylen;
+
+    if ( dnsr->d_nsinfo[ ns ].ns_edns == DNSR_EDNS_BAD ) {
+        /* EDNS is bad, strip it off */
+        DEBUG( fprintf( stderr, "stripping EDNS\n" ));
+        querylen = dnsr->d_questionlen;
+        memcpy( buf, dnsr->d_query, querylen );
+        query = buf;
+        h = (struct dnsr_header *)query;
+        h->h_arcount = htons( ntohs( h->h_arcount ) - 1 );
+    } else {
+        query = dnsr->d_query;
+        querylen = dnsr->d_querylen;
+    }
+
+    if ( querylen > dnsr->d_nsinfo[ ns ].ns_udp ) {  
+        DEBUG( fprintf( stderr, "query is too large for UDP on ns %d", ns ));
+        dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+        return( -1 );
+    }
 
     /* Set unique ID for query */
-    h = (struct dnsr_header *)dnsr->d_query;
+    h = (struct dnsr_header *)query;
     h->h_id = htons( dnsr->d_id ^ dnsr->d_nsinfo[ ns ].ns_id );
 
     /* Send query */
-    if (( sendto( dnsr->d_fd, dnsr->d_query, (size_t)dnsr->d_querylen, 0,
+    if (( sendto( dnsr->d_fd, query, querylen, 0,
 	    (struct sockaddr *)&dnsr->d_nsinfo[ ns ].ns_sa,
-	    sizeof( struct sockaddr_in ))) != dnsr->d_querylen ) {
+	    sizeof( struct sockaddr_in ))) != querylen ) {
 	DEBUG( perror( "sendto" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( -1 );
     }
 
-    DEBUG( _dnsr_display_header( (struct dnsr_header*)dnsr->d_query ));
+    DEBUG( _dnsr_display_header( (struct dnsr_header*)query ));
 
     if ( gettimeofday( &dnsr->d_querytime, NULL ) < 0 ) {
 	DEBUG( perror( "gettimeofday" ));
@@ -497,13 +520,16 @@ _dnsr_send_query( DNSR *dnsr, int ns )
  */
 
    char * 
-_dnsr_send_query_tcp( DNSR *dnsr, int *resplen )
+_dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 {
 
     char 		*resp_tcp = NULL;
     int			fd;
     ssize_t		size = 0, rc;
-    uint16_t		len;
+    struct dnsr_header  *h;
+    char                buf[ DNSR_MAX_UDP ];
+    char                *query;
+    uint16_t		querylen, len;
 
     if (( fd = socket( AF_INET, SOCK_STREAM, 0 )) < 0 ) {
 	DEBUG( perror( "_dnsr_send_query_tcp: socket" ));
@@ -511,14 +537,27 @@ _dnsr_send_query_tcp( DNSR *dnsr, int *resplen )
 	return( NULL );
     }
 
-    if ( connect( fd, (struct sockaddr*)&dnsr->d_nsinfo[ dnsr->d_nsresp ].ns_sa,
+    if ( connect( fd, (struct sockaddr*)&dnsr->d_nsinfo[ ns ].ns_sa,
 	    sizeof( struct sockaddr_in )) != 0 ) {
 	DEBUG( perror( "_dnsr_send_query_tcp: connect" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
 
-    len = htons( dnsr->d_querylen );
+    if ( dnsr->d_nsinfo[ ns ].ns_edns == DNSR_EDNS_BAD ) {
+        /* EDNS is bad, strip it off */
+        DEBUG( fprintf( stderr, "stripping EDNS\n" ));
+        querylen = dnsr->d_questionlen;
+        memcpy( buf, dnsr->d_query, DNSR_MAX_UDP );
+        query = buf;
+        h = (struct dnsr_header *)query;
+        h->h_arcount = htons( ntohs( h->h_arcount ) - 1 );
+    } else {
+        querylen = dnsr->d_querylen;
+        query = dnsr->d_query;
+    }
+
+    len = htons( querylen );
     if ( write( fd, &len, sizeof( len )) != sizeof( len )) {
 	DEBUG( perror( "_dnsr_send_query_tcp: send" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
@@ -526,14 +565,13 @@ _dnsr_send_query_tcp( DNSR *dnsr, int *resplen )
     }
     DEBUG( fprintf( stderr, "wrote len %d\n", len ));
 
-    if ( write( fd, dnsr->d_query, (size_t)dnsr->d_querylen )
-	    != dnsr->d_querylen ) {
+    if ( write( fd, query, (size_t)querylen ) != querylen ) {
 	DEBUG( perror( "_dnsr_send_query_tcp: send" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
     DEBUG( fprintf( stderr, "wrote query\n" ));
-    DEBUG( bprint( dnsr->d_query, (size_t)dnsr->d_querylen ));
+    DEBUG( bprint( query, (size_t)querylen ));
 
     if (( rc = read( fd, &len, sizeof( len ))) != sizeof( len )) {
 	DEBUG( perror( "_dnsr_send_query_tcp: read" ));
@@ -628,6 +666,7 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
     memset( h, 0, DNSR_MAX_UDP );
     h->h_flags = htons( dnsr->d_flags );
     h->h_qdcount = htons( 1 );
+    h->h_arcount = htons( 1 );
 
     dnsr->d_querylen += sizeof( struct dnsr_header );
 
@@ -645,6 +684,42 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
     q.q_class = htons( qclass );
     memcpy( &dnsr->d_query[ dnsr->d_querylen ], &q, sizeof( q ));
     dnsr->d_querylen += sizeof( q );
+    dnsr->d_questionlen = dnsr->d_querylen;
+
+    /* RFC 6891 6.1.2 Wire Format
+     * The fixed part of an OPT RR is structured as follows:
+     *      Field Name   Field Type     Description
+     *      ------------------------------------------------------
+     *      NAME         domain name    MUST be 0 (root domain)
+     *      TYPE         u_int16_t      OPT (41)
+     *      CLASS        u_int16_t      requestor's UDP payload size
+     *      TTL          u_int32_t      extended RCODE and flags
+     *      RDLEN        u_int16_t      length of all RDATA
+     *      RDATA        octet stream   {attribute,value} pairs
+     */
+
+    /* FIXME: this whole thing is ugly. */
+    dnsr->d_query[ dnsr->d_querylen++ ] = 0;
+    uint16_t    temp;
+    uint32_t    tempflags;
+    temp = htons( DNSR_TYPE_OPT );
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &temp, sizeof( uint16_t ));
+    dnsr->d_querylen += sizeof( uint16_t );
+    temp = htons( DNSR_MAX_UDP );
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &temp, sizeof( uint16_t ));
+    dnsr->d_querylen += sizeof( uint16_t );
+    tempflags = 0;
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &tempflags, sizeof( uint32_t ));
+    dnsr->d_querylen += sizeof( uint32_t );
+    temp = htons( sizeof( uint16_t ) * 2 );
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &temp, sizeof( uint16_t ));
+    dnsr->d_querylen += sizeof( uint16_t );
+    temp = htons( DNSR_EDNS_OPT_NSID );
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &temp, sizeof( uint16_t ));
+    dnsr->d_querylen += sizeof( uint16_t );
+    temp = htons( 0 );
+    memcpy( &dnsr->d_query[ dnsr->d_querylen ], &temp, sizeof( uint16_t ));
+    dnsr->d_querylen += sizeof( uint16_t );
 
     DEBUG( fprintf( stderr, "nscount: %d\n", dnsr->d_nscount ));
 

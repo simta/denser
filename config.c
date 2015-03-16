@@ -187,6 +187,8 @@ _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
     DEBUG( fprintf( stderr, "name server %d: %s\n", index, nameserver ));
 
     dnsr->d_nsinfo[ index ].ns_id = rand( ) & 0xffff;
+    dnsr->d_nsinfo[ index ].ns_udp = DNSR_MAX_UDP_BASIC;
+    dnsr->d_nsinfo[ index ].ns_edns = DNSR_EDNS_UNKNOWN;
 
     memset( &hints, 0, sizeof( struct addrinfo ));
     hints.ai_family = AF_INET;
