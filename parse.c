@@ -309,6 +309,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, char *resp_begin,
 {
     char		*dn_cur;
     char		*resp_end;
+    DEBUG( char                buf[ INET6_ADDRSTRLEN ] );
 
     resp_end = resp_begin + resplen;
 
@@ -466,13 +467,13 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, char *resp_begin,
     /* XXX - this case needs review */
     case DNSR_TYPE_A:
 	{
-	    struct in_addr	addr;
-
 	    if ( rr->rr_class == DNSR_CLASS_IN ) {
-		memcpy( &addr.s_addr, *resp_cur, sizeof( int32_t ));
+	        memcpy( &(rr->rr_a.a_address.s_addr), *resp_cur,
+                        sizeof( int32_t ));
 		*resp_cur += sizeof( int32_t );
-		DEBUG( fprintf( stderr, "%s\n", inet_ntoa( addr )));
-		rr->rr_a.a_address = addr.s_addr;
+		DEBUG( fprintf( stderr, "%s\n",
+                        inet_ntop( AF_INET, &(rr->rr_a.a_address),
+                        buf, INET_ADDRSTRLEN )));
 	    } else {
 		DEBUG( fprintf( stderr, "%d: unknown class\n", rr->rr_class ));
 		dnsr->d_errno = DNSR_ERROR_CLASS;
@@ -480,6 +481,22 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, char *resp_begin,
 	    }
 	    break;
 	}
+
+    case DNSR_TYPE_AAAA:
+        {
+            if ( rr->rr_class == DNSR_CLASS_IN ) {
+                memcpy( &(rr->rr_aaaa.aaaa_address.s6_addr), *resp_cur, 16 );
+                *resp_cur += 16;
+                DEBUG( fprintf( stderr, "%s\n",
+                        inet_ntop( AF_INET6, &(rr->rr_aaaa.aaaa_address),
+                        buf, INET6_ADDRSTRLEN )));
+            } else {
+                DEBUG( fprintf( stderr, "%d: unknown class\n", rr->rr_class ));
+                dnsr->d_errno = DNSR_ERROR_CLASS;
+                return( -1 );
+            }
+            break;
+        }
 
     case DNSR_TYPE_SRV:
 	if ( *resp_cur + ( 3 * sizeof( int16_t )) > resp_end ) {

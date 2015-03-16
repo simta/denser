@@ -233,7 +233,11 @@ struct rr_txt {
 
 /* 3.4.1. A RDATA format */
 struct rr_a {
-    int		a_address;
+    struct in_addr      a_address;
+};
+
+struct rr_aaaa {
+    struct in6_addr     aaaa_address;
 };
 
 /* RFC 2782 SRV record */
@@ -245,8 +249,8 @@ struct rr_srv {
 };
 
 struct ip_info {
-    struct in_addr	ip_ip;
-    struct ip_info	*ip_next;
+    struct sockaddr_storage     ip_sa;
+    struct ip_info              *ip_next;
 };
 
 struct dnsr_rr {
@@ -289,6 +293,8 @@ struct dnsr_rr {
 #define rr_txt rr_u.rd_txt
 	struct rr_a	rd_a;
 #define rr_a rr_u.rd_a
+        struct rr_aaaa  rd_aaaa;
+#define rr_aaaa rr_u.rd_aaaa
 	struct rr_srv	rd_srv;
 #define rr_srv rr_u.rd_srv
     } rr_u; 

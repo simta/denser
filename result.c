@@ -286,6 +286,8 @@ dnsr_free_result( struct dnsr_result *result )
     if ( result == NULL ) {
 	return;
     }
+
+    /* FIXME: Shouldn't this iterate over the linked lists? */
     if ( result->r_ancount > 0 ) {
 	for ( i = 0; i < result->r_ancount; i++ ) {
 	    free( result->r_answer[ i ].rr_ip );

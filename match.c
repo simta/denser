@@ -4,7 +4,10 @@
  */
 
 #include <sys/time.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,8 +22,9 @@ _dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 {
     int		i, j;
 
-    for ( i = 0; i < result->r_arcount; i++ ) { 
-	if ( result->r_additional[ i ].rr_type != DNSR_TYPE_A ) {
+    for ( i = 0; i < result->r_arcount; i++ ) {
+	if (( result->r_additional[ i ].rr_type != DNSR_TYPE_A ) &&
+            ( result->r_additional[ i ].rr_type != DNSR_TYPE_AAAA )) {
 	    DEBUG( printf( "%s rr_type %d\n",
 		    &result->r_additional[ i ].rr_name,
 		    result->r_additional[ i ].rr_type ));
@@ -47,10 +51,13 @@ _dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 _dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
 {
     struct ip_info	*ip_info, *prev_ip_info;
+    struct sockaddr_in  *addr4;
+    struct sockaddr_in6 *addr6;
 
     switch( rr->rr_type ) {
 
     case DNSR_TYPE_A:
+    case DNSR_TYPE_AAAA:
 	return( 0 );
 
     case DNSR_TYPE_CNAME:
@@ -98,15 +105,24 @@ _dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
     }
     memset( ip_info, 0, sizeof( struct ip_info ));
 
-    ip_info->ip_ip.s_addr = ar_rr->rr_a.a_address;
-    if ( rr->rr_ip == NULL ) {
-	rr->rr_ip = ip_info;
+    if ( ar_rr->rr_type == DNSR_TYPE_A ) {
+        addr4 = (struct sockaddr_in *)&(ip_info->ip_sa);
+        addr4->sin_family = AF_INET;
+        addr4->sin_addr = ar_rr->rr_a.a_address;
     } else {
-	prev_ip_info = rr->rr_ip;
-	while (  prev_ip_info->ip_next != NULL ) {
-	    prev_ip_info = prev_ip_info->ip_next;
-	}
-	prev_ip_info->ip_next = ip_info;
+        addr6 = (struct sockaddr_in6 *)&(ip_info->ip_sa);
+        addr6->sin6_family = AF_INET6;
+        addr6->sin6_addr = ar_rr->rr_aaaa.aaaa_address;
+    }
+
+    if ( rr->rr_ip == NULL ) {
+        rr->rr_ip = ip_info;
+    } else {
+        prev_ip_info = rr->rr_ip;
+        while ( prev_ip_info->ip_next != NULL ) {
+            prev_ip_info = prev_ip_info->ip_next;
+        }
+        prev_ip_info->ip_next = ip_info;
     }
 
     return( 1 );

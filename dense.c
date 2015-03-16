@@ -29,6 +29,7 @@ struct densetype {
     int		dt_value;
 } densetypes[] = {
     { "A",	DNSR_TYPE_A },
+    { "AAAA",   DNSR_TYPE_AAAA },
     { "MX",	DNSR_TYPE_MX },
     { "SOA",	DNSR_TYPE_SOA },
     { "TXT",	DNSR_TYPE_TXT },
@@ -156,10 +157,10 @@ print_rr( struct dnsr_rr *rr )
 
     case DNSR_TYPE_AAAA:
 	{
-	struct in_addr      addr;
+	char                buf[ INET6_ADDRSTRLEN ];
 	printf( "\tAAAA" );
-	memcpy( &addr.s_addr, &rr->rr_a, sizeof( int ));
-	printf( "\t%s\n", inet_ntoa( addr ));
+	printf( "\t%s\n", inet_ntop( AF_INET6, &(rr->rr_aaaa), buf,
+                INET6_ADDRSTRLEN ));
 	break;
 	}
 
@@ -169,16 +170,14 @@ print_rr( struct dnsr_rr *rr )
     }
 
     if ( rr->rr_type != DNSR_TYPE_A ) {
-	ip_info = rr->rr_ip;
-	if ( ip_info != NULL ) {
-	    printf( "( " );
-	    printf( "%s", inet_ntoa( ip_info->ip_ip ));
-	    ip_info = ip_info->ip_next;
-	    while ( ip_info != NULL ) {
-		printf( ", %s", inet_ntoa( ip_info->ip_ip ));
-		ip_info = ip_info->ip_next;
-	    }
-	    printf( " )\n" );
+        char                buf[ INET6_ADDRSTRLEN ];
+        for ( ip_info = rr->rr_ip ; ip_info ; ip_info = ip_info->ip_next ) {
+	    printf( "\t%s\n",
+                    inet_ntop( ip_info->ip_sa.ss_family,
+                    (( ip_info->ip_sa.ss_family == AF_INET )
+                    ? (void *)&(((struct sockaddr_in *)&(ip_info->ip_sa))->sin_addr)
+                    : (void *)&(((struct sockaddr_in6 *)&(ip_info->ip_sa))->sin6_addr)),
+                    buf, INET6_ADDRSTRLEN ));
 	}
     }
     return( 0 );

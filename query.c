@@ -66,7 +66,7 @@ struct lookup lookup_type[] = {
     { 25,	-1 },
     { 26,	-1 },
     { 27,	-1 },
-    { 28,	-1 },
+    { DNSR_TYPE_AAAA,	DNSR_TYPE_AAAA },   /* IPv6 record, RFC 3596 */
     { 29,	-1 },
     { 30,	-1 },
     { 31,	-1 },
