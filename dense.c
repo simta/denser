@@ -259,7 +259,7 @@ main( int argc, char* argv[] )
     }
 
     if ( typenum == DNSR_TYPE_PTR ) {
-	if (( name = dnsr_reverse_ip( dnsr, name, "in-addr.arpa" )) == NULL ) {
+	if (( name = dnsr_reverse_ip( dnsr, name, NULL )) == NULL ) {
 	    dnsr_perror( dnsr, "dnsr_reverse_ip" );
 	    exit( 1 );
 	}

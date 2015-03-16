@@ -307,7 +307,7 @@ int dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn );
 struct dnsr_result* dnsr_result( DNSR *dnsr, struct timeval *timeout );
 int dnsr_result_expired( DNSR *dnsr, struct dnsr_result *result );
 
-char * dnsr_ntoptr( DNSR *, const void *src, char * );
+char * dnsr_ntoptr( DNSR *, int, const void *, char * );
 char * dnsr_reverse_ip( DNSR *, char *, char * );
 
 int dnsr_errno( DNSR *dnser );

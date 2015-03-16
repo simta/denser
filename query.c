@@ -305,55 +305,79 @@ struct lookup lookup_class[] = {
 };
 
     char *
-dnsr_ntoptr( DNSR *dnsr, const void *src, char *suffix )
+dnsr_ntoptr( DNSR *dnsr, int af, const void *src, char *suffix )
 {
-    char		temp[ DNSR_MAX_HOSTNAME + 1];
+    char	    *res;
+    char            *p;
+    int             i, reverselen;
+    uint8_t         *iparr;
 
-    memset( temp, 0, DNSR_MAX_HOSTNAME + 1 );
-    if ( inet_ntop( AF_INET, src, temp, DNSR_MAX_HOSTNAME + 1 ) == NULL ) {
+    iparr = (uint8_t *)src;
+
+    if ( af == AF_INET ) {
+        suffix = suffix ? suffix : "in-addr.arpa";
+        reverselen = INET_ADDRSTRLEN + strlen( suffix ) + 2;
+    } else if ( af == AF_INET6 ) {
+        /* RFC 3596 2.5 IP6.ARPA Domain
+         * An IPv6 address is represented as a name in the IP6.ARPA domain by a
+         * sequence of nibbles separated by dots with the suffix ".IP6.ARPA".
+         * The sequence of nibbles is encoded in reverse order, i.e., the
+         * low-order nibble is encoded first, followed by the next low-order
+         * nibble and so on.  Each nibble is represented by a hexadecimal digit.
+         */
+        suffix = suffix ? suffix : "ip6.arpa";
+        /* RFC 2373 2.0 IPv6 ADDRESSING
+         * IPv6 addresses are 128-bit identifiers
+         *
+         * 128 bits = 32 nibbles + 32 dots.
+         */
+        reverselen = 64 + strlen( suffix ) + 2;
+    } else {
+        dnsr->d_errno = DNSR_ERROR_UNKNOWN;
+        return( NULL );
+    }
+
+    if (( res = (char*)malloc( reverselen )) == NULL ) {
+	DEBUG( perror( "malloc" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( NULL );
     }
-    DEBUG( fprintf( stderr, "inet_ntop -> %s\n", temp ));
+    memset( res, 0, reverselen );
 
-    return( dnsr_reverse_ip( dnsr, temp, suffix ? suffix : "in-addr.arpa" ));
+    if ( af == AF_INET ) {
+        sprintf( res, "%u.%u.%u.%u.%s",
+                iparr[ 3 ], iparr[ 2 ],
+                iparr[ 1 ], iparr[ 0 ], suffix );
+    } else if ( af == AF_INET6 ) {
+        p = res;
+        for ( i = 15; i >= 0; i-- ) {
+            sprintf( p, "%x.%x.", iparr[ i ] & 0x0f,
+                    ( iparr[ i ] >> 4 ) & 0x0f );
+            p += 4;
+        }
+        sprintf( p, "%s", suffix );
+    }
+
+    return( res );
 }
 
     char *
 dnsr_reverse_ip( DNSR *dnsr, char *ip, char *suffix )
 {
-    char	*ptr;
-    int		i, j, l = 0, reverselen;
+    int             af = AF_INET;
+    struct in_addr  ipaddr;
 
-    reverselen = INET_ADDRSTRLEN + strlen( suffix ) + 2;
-
-    if (( ptr = (char*)malloc( reverselen )) == NULL ) {
-	DEBUG( perror( "malloc" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( NULL );
-    }
-    memset( ptr, 0, reverselen );
-
-    i = strlen( ip );
-
-    for ( ; i > 0; i-- ) {
-	if (( ip[ i ] == '.' ) || ( i == 0 )) {
-	    j = 1;
-	    while (( ip[ i + j ] != '.' ) && ( ip[ i + j ] != '\0' )) {
-		ptr[ l++ ] = ip[ i + j++ ];
-	    }
-	    ptr[ l++ ] = '.';
-	    j = 0;
-	} else {
-	    j++;
-	}
-    }
-    for ( i = 0; ip[ i ] != '.' ; i++ ) {
-	ptr[ l++ ] = ip[ i ];
+    if ( strchr( ip, ':' ) != NULL ) {
+        af = AF_INET6;
     }
 
-    sprintf( &ptr[ l ], ".%s", suffix );
-    return( ptr );
+    if ( inet_pton( af, ip, &ipaddr ) <= 0 ) {
+        DEBUG( perror( "inet_pton" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( NULL );
+    }
+
+    return( dnsr_ntoptr( dnsr, af, &ipaddr.s_addr, suffix ));
 }
 
     static int
