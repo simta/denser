@@ -106,9 +106,9 @@ struct dnsr_result {
 };
 
 struct nsinfo {
-    uint16_t		ns_id;
-    int                 ns_asked;
-    struct sockaddr_in	ns_sa;
+    uint16_t		        ns_id;
+    int                         ns_asked;
+    struct sockaddr_storage     ns_sa;
 };
 
 typedef struct {

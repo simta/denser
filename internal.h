@@ -15,7 +15,7 @@
 #define DNSR_RC_NOTIMP		4	/* Not implemented */
 #define DNSR_RC_REFUSED		5	/* Operation refused */
 
-#define DNSR_DEFAULT_PORT	53
+#define DNSR_DEFAULT_PORT	"53"
 
 /* DNSR bit masks */
 #define DNSR_RESPONSE			0x8000

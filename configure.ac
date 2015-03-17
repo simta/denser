@@ -26,7 +26,7 @@ AC_ARG_WITH(resolvconf, AC_HELP_STRING([--with-resolvconf=PATH], [default resolv
 AC_DEFINE_UNQUOTED(_DNSR_RESOLV_CONF_PATH, ["$with_resolvconf"], [default resolv.conf path])
 
 # Checks for libraries.
-AC_CHECK_LIB([nsl], [inet_ntoa])
+AC_CHECK_LIB([nsl], [inet_ntop])
 AC_CHECK_LIB([socket], [socket])
 
 AC_CONFIG_FILES(Makefile)

@@ -44,8 +44,8 @@ struct rr {
 _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 {
     int			i;
-    socklen_t           socklen;
     struct dnsr_header	*h;
+    struct sockaddr_in  *sin;
     uint16_t		flags;
     char		word[ DNSR_MAX_NAME ];
 
@@ -60,17 +60,15 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 	    continue;
 	}
 
-	socklen = sizeof( struct sockaddr_in );
-
 	/* Do not check sin_len since it might not be defined */
 	/* This check is not required by an RFC */
-	if ( socklen == sizeof( struct sockaddr_in ) 
-		&& memcmp( &dnsr->d_nsinfo[ i ].ns_sa.sin_addr, 
+        sin = (struct sockaddr_in *)&(dnsr->d_nsinfo[ i ].ns_sa);
+	if ( memcmp( &sin->sin_addr, 
 		    &reply_from->sin_addr, sizeof( reply_from->sin_addr )) == 0
-		&& memcmp( &dnsr->d_nsinfo[ i ].ns_sa.sin_family, 
+		&& memcmp( &sin->sin_family, 
 		    &reply_from->sin_family,
 		    sizeof( reply_from->sin_family )) == 0
-		&& memcmp( &dnsr->d_nsinfo[ i ].ns_sa.sin_port, 
+		&& memcmp( &sin->sin_port, 
 		    &reply_from->sin_port,
 		    sizeof( reply_from->sin_port )) == 0 ) {
 	    dnsr->d_nsresp = i;

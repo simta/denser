@@ -138,10 +138,10 @@ print_rr( struct dnsr_rr *rr )
 
     case DNSR_TYPE_A:
 	{
-	struct in_addr      addr;
+        char                buf[ INET_ADDRSTRLEN ];
 	printf( "\tA" );
-	memcpy( &addr.s_addr, &rr->rr_a, sizeof( int ));
-	printf( "\t%s\n", inet_ntoa( addr ));
+	printf( "\t%s\n", inet_ntop( AF_INET, &(rr->rr_a), buf,
+                INET_ADDRSTRLEN ));
 	break;
 	}
 

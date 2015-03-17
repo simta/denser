@@ -175,6 +175,10 @@ _dnsr_parse_resolv( DNSR *dnsr )
     static int
 _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
 {
+    struct addrinfo     hints;
+    struct addrinfo     *result;
+    int                 s;
+
     if (( index < 0 ) || ( index > DNSR_MAX_NS )) {
 	DEBUG( fprintf( stderr, "%d: index out of range\n", index ));
 	dnsr->d_errno = DNSR_ERROR_CONFIG;
@@ -183,17 +187,23 @@ _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
     DEBUG( fprintf( stderr, "name server %d: %s\n", index, nameserver ));
 
     dnsr->d_nsinfo[ index ].ns_id = rand( ) & 0xffff;
-    dnsr->d_nsinfo[ index ].ns_sa.sin_family = AF_INET;
-    dnsr->d_nsinfo[ index ].ns_sa.sin_port = htons( DNSR_DEFAULT_PORT );
 
-    /* move up if error */
-    if (( dnsr->d_nsinfo[ index ].ns_sa.sin_addr.s_addr =
-	    inet_addr( nameserver )) == INADDR_NONE ) {
-	DEBUG( fprintf( stderr,
-	    "inet_addr: %s: malformed hostname\n", nameserver ));
-	dnsr->d_errno = DNSR_ERROR_CONFIG;
-	return( 1 );
+    memset( &hints, 0, sizeof( struct addrinfo ));
+    hints.ai_family = AF_INET;
+    hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
+
+    if ((s = getaddrinfo( nameserver, DNSR_DEFAULT_PORT, &hints, &result )) != 0 ) {
+        DEBUG( fprintf( stderr,
+                "getaddrinfo: %s\n", gai_strerror( s )));
+        dnsr->d_errno = DNSR_ERROR_CONFIG;
+        return( 1 );
     }
+
+    /* FIXME: getaddrinfo may have returned multiple results. Do we care? */
+    memcpy( (struct sockaddr_in *)&(dnsr->d_nsinfo[ index ].ns_sa),
+            (struct sockaddr_in *)result->ai_addr,
+            sizeof( struct sockaddr_in ));
+    freeaddrinfo( result );
 
     return ( 0 );
 }

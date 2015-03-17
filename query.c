@@ -460,15 +460,6 @@ _dnsr_send_query( DNSR *dnsr, int ns )
     dnsr->d_querysent = 1;
     dnsr->d_nsinfo[ ns ].ns_asked = 1;
 
-    //DEBUG( {
-	    //struct sockaddr_in		*sin;
-//
-	    //sin = (struct sockaddr_in *)dnsr->d_nsinfo[ ns ].ns_sa; 
-	    //fprintf( stderr, "ASKED ns: %d ( %s )\n", ns,
-		//inet_ntoa( sin->sin_addr ));
-	//} )
-
-
     return( 0 );
 }
 

@@ -172,10 +172,10 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    }
 	    DEBUG( fprintf( stderr, "received %d bytes\n", resplen ));
 	    DEBUG( {  
-		struct sockaddr_in          *sin;
-
-		sin = (struct sockaddr_in *)&reply_from;
-		fprintf( stderr, "reply: %s\n", inet_ntoa( sin->sin_addr ));
+                char                        buf[ INET_ADDRSTRLEN ];
+		fprintf( stderr, "reply: %s\n", inet_ntop( AF_INET,
+                        &(((struct sockaddr_in *)&reply_from)->sin_addr),
+                        buf, INET_ADDRSTRLEN ));
 	    } )
 
 	    if (( rc = _dnsr_validate_resp( dnsr, resp, &reply_from )) != 0 ) {
