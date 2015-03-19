@@ -49,10 +49,15 @@ dnsr_new( void )
     memset( dnsr, 0, sizeof( DNSR ));
     dnsr->d_nsresp = -1;
 
-    if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
-	DEBUG( perror( "dnsr_open: socket" ));
-	free( dnsr );
-	return( NULL );
+    if (( dnsr->d_fd = socket( AF_INET6, SOCK_DGRAM, 0 )) < 0 ) {
+        if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
+	    DEBUG( perror( "dnsr_open: socket" ));
+	    free( dnsr );
+	    return( NULL );
+        }
+        dnsr->d_af = AF_INET;
+    } else {
+        dnsr->d_af = AF_INET6;
     }
 
     /* XXX - do we need to check error here? */

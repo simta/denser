@@ -47,7 +47,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
     struct timeval	end;	/* Time of timeout */
     struct timeval	ext;	/* Time passed since last query */	
     struct timeval	wait;	/* Calculated wait time */
-    struct sockaddr_in	reply_from; 
+    struct sockaddr_storage	reply_from; 
     socklen_t 		socklen;
 
     if ( !dnsr->d_querysent ) {
@@ -55,7 +55,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	dnsr->d_errno = DNSR_ERROR_NO_QUERY;
 	return( NULL );
     }
-    socklen = sizeof( struct sockaddr_in );
+    socklen = sizeof( struct sockaddr_storage );
 
     /* Calculate end */
     if ( timeout != NULL ) {
@@ -173,13 +173,16 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    }
 	    DEBUG( fprintf( stderr, "received %d bytes\n", resplen ));
 	    DEBUG( {  
-                char                        buf[ INET_ADDRSTRLEN ];
-		fprintf( stderr, "reply: %s\n", inet_ntop( AF_INET,
-                        &(((struct sockaddr_in *)&reply_from)->sin_addr),
-                        buf, INET_ADDRSTRLEN ));
+                char                        buf[ INET6_ADDRSTRLEN ];
+                if ( getnameinfo( (struct sockaddr*)&reply_from,
+                        sizeof( struct sockaddr_storage ), buf,
+                        INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST ) == 0 ) {
+		    fprintf( stderr, "reply: %s\n", buf );
+                }
 	    } )
 
-	    if (( rc = _dnsr_validate_resp( dnsr, resp, &reply_from )) != 0 ) {
+	    if (( rc = _dnsr_validate_resp( dnsr, resp,
+                    (struct sockaddr *)&reply_from )) != 0 ) {
 		DEBUG( dnsr_perror( dnsr, "_dnsr_validate_resp" ));
                 if ( rc == DNSR_ERROR_NS_INVALID ) {
                     break;
@@ -189,7 +192,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 			return( NULL );
 		    }
 		    if (( _dnsr_validate_resp( dnsr, resp_tcp,
-			    &reply_from )) != 0 ) {
+			    (struct sockaddr *)&reply_from )) != 0 ) {
                         error = 1;        
 		    }
 

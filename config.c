@@ -147,10 +147,11 @@ _dnsr_parse_resolv( DNSR *dnsr )
 	if ( strcmp( argv[ 0 ], "nameserver" ) == 0 ) {
 	    if ( dnsr->d_nscount < DNSR_MAX_NS ) {
 		if (( rc = _dnsr_nameserver_add( dnsr, argv[ 1 ],
-			dnsr->d_nscount ) != 0 )) {
+			dnsr->d_nscount )) > 0 ) {
 		    return( rc );
-		}
-		dnsr->d_nscount++;
+                } else if ( rc == 0 ) {
+                    dnsr->d_nscount++;
+                }
 	    } else {
 		DEBUG( fprintf( stderr,
 		    "parse_resolve: nameserver %s not added: too many\n",
@@ -191,8 +192,12 @@ _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
     dnsr->d_nsinfo[ index ].ns_edns = DNSR_EDNS_UNKNOWN;
 
     memset( &hints, 0, sizeof( struct addrinfo ));
-    hints.ai_family = AF_INET;
+
+    hints.ai_family = dnsr->d_af;
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
+    if ( dnsr->d_af == AF_INET6 ) {
+        hints.ai_flags |= AI_V4MAPPED | AI_ALL;
+    }
 
     if ((s = getaddrinfo( nameserver, DNSR_DEFAULT_PORT, &hints, &result )) != 0 ) {
         DEBUG( fprintf( stderr,
@@ -202,11 +207,18 @@ _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
     }
 
     /* FIXME: getaddrinfo may have returned multiple results. Do we care? */
-    memcpy( (struct sockaddr_in *)&(dnsr->d_nsinfo[ index ].ns_sa),
-            (struct sockaddr_in *)result->ai_addr,
-            sizeof( struct sockaddr_in ));
-    freeaddrinfo( result );
+    if ( result->ai_family == AF_INET ) {
+        memcpy( &(dnsr->d_nsinfo[ index ].ns_sa), result->ai_addr,
+                sizeof( struct sockaddr_in ));
+    } else if ( dnsr->d_af == AF_INET6 ) {
+        memcpy( &(dnsr->d_nsinfo[ index ].ns_sa), result->ai_addr,
+                sizeof( struct sockaddr_in6 ));
+    } else {
+        freeaddrinfo( result );
+        return( -1 );
+    }
 
+    freeaddrinfo( result );
     return ( 0 );
 }
 

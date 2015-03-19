@@ -491,7 +491,7 @@ _dnsr_send_query( DNSR *dnsr, int ns )
     /* Send query */
     if (( sendto( dnsr->d_fd, query, querylen, 0,
 	    (struct sockaddr *)&dnsr->d_nsinfo[ ns ].ns_sa,
-	    sizeof( struct sockaddr_in ))) != querylen ) {
+	    sizeof( struct sockaddr_storage ))) != querylen ) {
 	DEBUG( perror( "sendto" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( -1 );
@@ -531,14 +531,15 @@ _dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
     char                *query;
     uint16_t		querylen, len;
 
-    if (( fd = socket( AF_INET, SOCK_STREAM, 0 )) < 0 ) {
+    if (( fd = socket( dnsr->d_nsinfo[ ns ].ns_sa.ss_family,
+            SOCK_STREAM, 0 )) < 0 ) {
 	DEBUG( perror( "_dnsr_send_query_tcp: socket" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( NULL );
     }
 
     if ( connect( fd, (struct sockaddr*)&dnsr->d_nsinfo[ ns ].ns_sa,
-	    sizeof( struct sockaddr_in )) != 0 ) {
+	    sizeof( struct sockaddr_storage )) != 0 ) {
 	DEBUG( perror( "_dnsr_send_query_tcp: connect" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;

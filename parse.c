@@ -41,15 +41,12 @@ struct rr {
  */
 
     int
-_dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
+_dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr *reply_from )
 {
     int			ns;
     struct dnsr_header	*h;
-    struct sockaddr_in  *sin;
     uint16_t		flags;
     char		word[ DNSR_MAX_NAME ];
-
-    
 
     /* Determine which server responded */
     for ( ns = 0; ns < dnsr->d_nscount; ns++ ) {
@@ -60,20 +57,34 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from )
 	    continue;
 	}
 
-	/* Do not check sin_len since it might not be defined */
-	/* This check is not required by an RFC */
-        sin = (struct sockaddr_in *)&(dnsr->d_nsinfo[ ns ].ns_sa);
-	if ( memcmp( &sin->sin_addr, 
-		    &reply_from->sin_addr, sizeof( reply_from->sin_addr )) == 0
-		&& memcmp( &sin->sin_family, 
-		    &reply_from->sin_family,
-		    sizeof( reply_from->sin_family )) == 0
-		&& memcmp( &sin->sin_port, 
-		    &reply_from->sin_port,
-		    sizeof( reply_from->sin_port )) == 0 ) {
-	    dnsr->d_nsresp = ns;
-	    DEBUG( fprintf( stderr, "ns %d responded\n", ns ));
-	    break;
+        if ( dnsr->d_nsinfo[ ns ].ns_sa.ss_family != reply_from->sa_family ) {
+            continue;
+        }
+
+        if ( reply_from->sa_family == AF_INET ) {
+            struct sockaddr_in *p =
+                    (struct sockaddr_in*) &dnsr->d_nsinfo[ ns ].ns_sa;
+            struct sockaddr_in *r = (struct sockaddr_in*) reply_from;
+            if (( memcmp( &p->sin_addr, &r->sin_addr,
+                    sizeof( r->sin_addr )) == 0 ) &&
+                    ( memcmp( &p->sin_port, &r->sin_port,
+                    sizeof( r->sin_port )) == 0 )) {
+                dnsr->d_nsresp = ns;
+                DEBUG( fprintf( stderr, "ns %d responded\n", ns ));
+                break;
+            }
+        } else {
+            struct sockaddr_in6 *p =
+                    (struct sockaddr_in6*) &dnsr->d_nsinfo[ ns ].ns_sa;
+            struct sockaddr_in6 *r = (struct sockaddr_in6*) reply_from;
+            if (( memcmp( &p->sin6_addr, &r->sin6_addr,
+                    sizeof( r->sin6_addr )) == 0 ) &&
+                    ( memcmp( &p->sin6_port, &r->sin6_port,
+                    sizeof( r->sin6_port )) == 0 )) {
+	        dnsr->d_nsresp = ns;
+	        DEBUG( fprintf( stderr, "ns %d responded\n", ns ));
+	        break;
+            }
 	}
     }
     if ( ns < 0 || ns >= dnsr->d_nscount ) {

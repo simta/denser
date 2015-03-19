@@ -130,6 +130,7 @@ typedef struct {
     int			d_nscount;
     int			d_nsresp;
     int			d_fd;
+    int                 d_af;
     struct timeval 	d_querytime;
 } DNSR;
 

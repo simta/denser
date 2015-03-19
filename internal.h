@@ -77,7 +77,7 @@ struct dnsr_header {
 
 int _dnsr_display_header( struct dnsr_header *h );
 char * _dnsr_send_query_tcp( DNSR *, int, int * );
-int _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr_in *reply_from );
+int _dnsr_validate_resp( DNSR *, char *, struct sockaddr * );
 int _dnsr_validate_result( DNSR *, struct dnsr_result * );
 struct dnsr_result * _dnsr_create_result( DNSR *dnsr, char *resp, int resplen );
 int _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur, unsigned int resplen, char *dn_begin, char **dn_cur, char *dn_end );
