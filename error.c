@@ -81,9 +81,13 @@ dnsr_err2string( int dnsr_errno )
     void
 dnsr_perror( DNSR *dnsr, const char *s )
 {
-    if ( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
-	perror( s );
+    if ( dnsr != NULL ) {
+        if ( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
+            perror( s );
+        } else {
+            fprintf( stderr, "%s: %s\n", s, dnsr_err2string( dnsr->d_errno ));
+        }
     } else {
-	fprintf( stderr, "%s: %s\n", s, dnsr_err2string( dnsr->d_errno ));
+        fprintf( stderr, "%s: dnsr_perror: dnsr is NULL\n", s );
     }
 }
