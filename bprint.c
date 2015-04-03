@@ -1,3 +1,8 @@
+/*  
+ * Copyright (c) Regents of The University of Michigan
+ * See COPYING.
+ */
+
 #define BPXLEN	50
 #define BPALEN	18
 #include <ctype.h>

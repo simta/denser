@@ -1,3 +1,8 @@
+/*  
+ * Copyright (c) Regents of The University of Michigan
+ * See COPYING.
+ */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>

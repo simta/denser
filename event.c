@@ -1,3 +1,8 @@
+/*  
+ * Copyright (c) Regents of The University of Michigan
+ * See COPYING.
+ */
+
 #include "event.h"
 
 /* This event table starts after the first name server has been queried */

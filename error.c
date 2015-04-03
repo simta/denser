@@ -1,3 +1,8 @@
+/*  
+ * Copyright (c) Regents of The University of Michigan
+ * See COPYING.
+ */
+
 #include <sys/time.h>
 #include <sys/param.h>
 #include <netinet/in.h>
