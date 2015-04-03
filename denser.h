@@ -348,4 +348,4 @@ void dnsr_perror( DNSR *dnsr, const char *s );
 int dnsr_free( DNSR *dnsr );
 void dnsr_free_result( struct dnsr_result *result );
 
-int _dnsr_send_query( DNSR *dnsr, int ns );
+int dnsr_send_query( DNSR *dnsr, int ns );

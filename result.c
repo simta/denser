@@ -181,17 +181,17 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
                 }
 	    } )
 
-	    if (( rc = _dnsr_validate_resp( dnsr, resp,
+	    if (( rc = dnsr_validate_resp( dnsr, resp,
                     (struct sockaddr *)&reply_from )) != 0 ) {
-		DEBUG( dnsr_perror( dnsr, "_dnsr_validate_resp" ));
+		DEBUG( dnsr_perror( dnsr, "dnsr_validate_resp" ));
                 if ( rc == DNSR_ERROR_NS_INVALID ) {
                     break;
 		} else if ( rc == DNSR_ERROR_TRUNCATION ) {
-		    if ((( resp_tcp = _dnsr_send_query_tcp( dnsr,
+		    if ((( resp_tcp = dnsr_send_query_tcp( dnsr,
 			    dnsr->d_nsresp, &resplen )) == NULL )) {
 			return( NULL );
 		    }
-		    if (( _dnsr_validate_resp( dnsr, resp_tcp,
+		    if (( dnsr_validate_resp( dnsr, resp_tcp,
 			    (struct sockaddr *)&reply_from )) != 0 ) {
                         error = 1;        
 		    }
@@ -202,9 +202,9 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    }
 
 	    if ( resp_tcp != NULL ) {
-		result = _dnsr_create_result( dnsr, resp_tcp, resplen );
+		result = dnsr_create_result( dnsr, resp_tcp, resplen );
 	    } else {
-		result = _dnsr_create_result( dnsr, resp, resplen );
+		result = dnsr_create_result( dnsr, resp, resplen );
 	    }
 	    if ( result == NULL ) {
 		if( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
@@ -224,15 +224,15 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 		free( resp_tcp );
 		resp_tcp = NULL;
 	    }
-            if (( rc = _dnsr_validate_result( dnsr, result )) != 0 ) {
-                DEBUG( fprintf( stderr, "_dnsr_validate_result failed\n" ));
+            if (( rc = dnsr_validate_result( dnsr, result )) != 0 ) {
+                DEBUG( fprintf( stderr, "dnsr_validate_result failed\n" ));
                 if ( rc == DNSR_ERROR_NAME ) {
                     return( result );
                 }
                 error = 1;
             }
-	    if ( _dnsr_match_additional( dnsr, result ) != 0 ) {
-		DEBUG( fprintf( stderr, "_dnsr_match_additional failed\n" ));
+	    if ( dnsr_match_additional( dnsr, result ) != 0 ) {
+		DEBUG( fprintf( stderr, "dnsr_match_additional failed\n" ));
 		dnsr_free_result( result );
 		return( NULL );
 	    }
@@ -247,7 +247,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    DEBUG( fprintf( stderr, "ASK_STATE\n" ));
 	    if ( eventlist[ dnsr->d_state ].e_value < dnsr->d_nscount ) {
 		/* Check if NS is valid & alive */
-		if ( _dnsr_send_query( dnsr,
+		if ( dnsr_send_query( dnsr,
 			eventlist[ dnsr->d_state ].e_value ) != 0 ) {
 		    return( NULL );
 		}

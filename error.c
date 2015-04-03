@@ -13,12 +13,12 @@
 #include "denser.h"
 #include "internal.h"
 
-struct _error {
+struct dnsr_error {
     int		e_errno;
     char	*e_string;
 };
 
-static struct _error _dnsr_error_txt[ DNSR_MAX_ERRNO + 2 ] = {
+static struct dnsr_error dnsr_error_txt[ DNSR_MAX_ERRNO + 2 ] = {
     { DNSR_ERROR_NONE, "no error" },
     { DNSR_ERROR_FORMAT, "format error" },
     { DNSR_ERROR_SERVER, "server failure" },
@@ -72,9 +72,9 @@ dnsr_err2string( int dnsr_errno )
 {
     /* check if < 0 or > max, and then just return as offest */
     if ( dnsr_errno < 0 || dnsr_errno > DNSR_MAX_ERRNO ) {
-	return( _dnsr_error_txt[ DNSR_ERROR_UNKNOWN ].e_string );
+	return( dnsr_error_txt[ DNSR_ERROR_UNKNOWN ].e_string );
     } else {
-	return( _dnsr_error_txt[ dnsr_errno ].e_string );
+	return( dnsr_error_txt[ dnsr_errno ].e_string );
     }
 }
 

@@ -75,15 +75,15 @@ struct dnsr_header {
     uint16_t   h_arcount;
 };
 
+struct dnsr_result *dnsr_create_result( DNSR *, char *, int );
+int dnsr_display_header( struct dnsr_header *h );
 void dnsr_free_ip_info( struct ip_info * );
 void dnsr_free_txt_string( struct txt_string * );
-int _dnsr_display_header( struct dnsr_header *h );
-char * _dnsr_send_query_tcp( DNSR *, int, int * );
-int _dnsr_validate_resp( DNSR *, char *, struct sockaddr * );
-int _dnsr_validate_result( DNSR *, struct dnsr_result * );
-struct dnsr_result * _dnsr_create_result( DNSR *dnsr, char *resp, int resplen );
-int _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur, unsigned int resplen, char *dn_begin, char **dn_cur, char *dn_end );
-int _dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end, char *string_begin );
-int _dnsr_parse_rr( DNSR *, struct dnsr_rr *, struct dnsr_result *, char *, char **, int );
-int _dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result );
-int _dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr );
+int dnsr_labels_to_name( DNSR *, char *, char **, unsigned int, char *, char **, char * );
+int dnsr_labels_to_string( DNSR *, char **, char *, char * );
+int dnsr_match_additional( DNSR *, struct dnsr_result * );
+int dnsr_match_ip( DNSR *, struct dnsr_rr *, struct dnsr_rr * );
+int dnsr_parse_rr( DNSR *, struct dnsr_rr *, struct dnsr_result *, char *, char **, int );
+char * dnsr_send_query_tcp( DNSR *, int, int * );
+int dnsr_validate_resp( DNSR *, char *, struct sockaddr * );
+int dnsr_validate_result( DNSR *, struct dnsr_result * );

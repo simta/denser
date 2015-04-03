@@ -23,7 +23,7 @@ fi
 AC_SUBST(OPTOPTS)
 
 AC_ARG_WITH(resolvconf, AC_HELP_STRING([--with-resolvconf=PATH], [default resolv.conf path]), [], with_resolvconf="/etc/resolv.conf")
-AC_DEFINE_UNQUOTED(_DNSR_RESOLV_CONF_PATH, ["$with_resolvconf"], [default resolv.conf path])
+AC_DEFINE_UNQUOTED(DNSR_RESOLV_CONF_PATH, ["$with_resolvconf"], [default resolv.conf path])
 
 # Checks for libraries.
 AC_CHECK_LIB([nsl], [inet_ntop])

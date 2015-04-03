@@ -41,7 +41,7 @@ struct rr {
  */
 
     int
-_dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr *reply_from )
+dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr *reply_from )
 {
     int			ns;
     struct dnsr_header	*h;
@@ -102,7 +102,7 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr *reply_from )
     memset( word, 0, DNSR_MAX_NAME );
 
     h = (struct dnsr_header *)resp;
-    DEBUG( _dnsr_display_header( h ));
+    DEBUG( dnsr_display_header( h ));
 
     /* RFC section 4.1.1 Header section format
      * OPCODE, RD, and QD should match question
@@ -151,7 +151,7 @@ _dnsr_validate_resp( DNSR *dnsr, char *resp, struct sockaddr *reply_from )
 }
 
     int
-_dnsr_validate_result( DNSR *dnsr, struct dnsr_result *result ) {
+dnsr_validate_result( DNSR *dnsr, struct dnsr_result *result ) {
     /* Check RCODE */
     switch( result->r_rcode ) {
     case DNSR_RC_OK:
@@ -202,7 +202,7 @@ _dnsr_validate_result( DNSR *dnsr, struct dnsr_result *result ) {
 }
 
     struct dnsr_result *
-_dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
+dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
 {
     char		*resp_cur;
     struct dnsr_header	*h;
@@ -262,7 +262,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
 
     DEBUG( fprintf( stderr, "Answer section\n" ));
     for ( i = 0; i < result->r_ancount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_answer[ i ], result, resp, &resp_cur,
+	if ( dnsr_parse_rr( dnsr, &result->r_answer[ i ], result, resp, &resp_cur,
 		resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -270,7 +270,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
     }
 
     if ( result->r_ancount > 0 ) {
-	/* XXX - move into _dnsr_sort_result( ) */
+	/* XXX - move into dnsr_sort_result( ) */
 	for ( i = 0; i < ( result->r_ancount - 1 ); i++ ) {
 	    if ( result->r_answer[ i ].rr_type != DNSR_TYPE_MX ) {
 		continue;
@@ -298,7 +298,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
 
     DEBUG( fprintf( stderr, "\nNS Authority\n"));
     for ( i = 0; i < result->r_nscount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_ns[ i ], result, resp, &resp_cur,
+	if ( dnsr_parse_rr( dnsr, &result->r_ns[ i ], result, resp, &resp_cur,
 		resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -306,7 +306,7 @@ _dnsr_create_result( DNSR *dnsr, char *resp, int resplen )
     }
 
     for ( i = 0; i < result->r_arcount; i++ ) {
-	if ( _dnsr_parse_rr( dnsr, &result->r_additional[ i ], result, resp,
+	if ( dnsr_parse_rr( dnsr, &result->r_additional[ i ], result, resp,
 		&resp_cur, resplen ) != 0 ) {
 	    DEBUG( fprintf( stderr, "parse_rr failed\n" ));
 	    goto error;
@@ -321,7 +321,7 @@ error:
 }
 
     int
-_dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
+dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
         char *resp_begin, char **resp_cur, int resplen )
 
 {
@@ -334,7 +334,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 
     /* Name */
     dn_cur = rr->rr_name;
-    if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+    if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 	    rr->rr_name, &dn_cur, rr->rr_name + DNSR_MAX_NAME ) < 0 ) {
 	return( -1 );
     }
@@ -385,7 +385,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
     case DNSR_TYPE_PTR:
 
 	dn_cur = rr->rr_dn.dn_name;
-	if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+	if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 		rr->rr_dn.dn_name, &dn_cur, 
 		rr->rr_dn.dn_name + DNSR_MAX_NAME ) < 0 ) {
 	    return( -1 );
@@ -395,13 +395,13 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 
     case DNSR_TYPE_HINFO:
 	dn_cur = rr->rr_hinfo.hi_cpu;
-	if ( _dnsr_labels_to_string( dnsr, resp_cur, resp_begin + resplen,
+	if ( dnsr_labels_to_string( dnsr, resp_cur, resp_begin + resplen,
 		rr->rr_hinfo.hi_cpu ) < 0 ) {
 	    return( -1 );
 	}
 	DEBUG( fprintf( stderr, "%s ", rr->rr_hinfo.hi_cpu ));
 	dn_cur = rr->rr_hinfo.hi_os;
-	if ( _dnsr_labels_to_string( dnsr, resp_cur, resp_begin + resplen,
+	if ( dnsr_labels_to_string( dnsr, resp_cur, resp_begin + resplen,
 		rr->rr_hinfo.hi_os ) < 0 ) {
 	    return( -1 );
 	}
@@ -420,7 +420,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 	rr->rr_mx.mx_preference = ntohs( rr->rr_mx.mx_preference );
 	*resp_cur += sizeof( uint16_t );
 	dn_cur = rr->rr_mx.mx_exchange;
-	if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+	if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 		rr->rr_mx.mx_exchange, &dn_cur, 
 		rr->rr_mx.mx_exchange + DNSR_MAX_NAME ) < 0 ) {
 	    return( -1 );
@@ -431,13 +431,13 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 
     case DNSR_TYPE_SOA:
 	dn_cur = rr->rr_soa.soa_mname;
-	if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+	if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 		rr->rr_soa.soa_mname, &dn_cur, 
 		rr->rr_soa.soa_mname + DNSR_MAX_NAME ) < 0 ) {
 	    return( -1 );
 	}
 	dn_cur = rr->rr_soa.soa_rname;
-	if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+	if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 		rr->rr_soa.soa_rname, &dn_cur, 
 		rr->rr_soa.soa_rname + DNSR_MAX_NAME ) < 0 ) {
 	    return( -1 );
@@ -482,7 +482,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
             while ( *resp_cur < txt_end ) {
                 *txt_string = malloc( sizeof( struct txt_string ));
                 memset( *txt_string, 0, sizeof( struct txt_string ));
-                if ( _dnsr_labels_to_string( dnsr, resp_cur, txt_end,
+                if ( dnsr_labels_to_string( dnsr, resp_cur, txt_end,
                         (*txt_string)->s_string ) < 0 ) {
                     return( -1 );
                 }
@@ -612,7 +612,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 	*resp_cur += sizeof( uint16_t );
 
 	dn_cur = rr->rr_srv.srv_target;
-	if ( _dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
+	if ( dnsr_labels_to_name( dnsr, resp_begin, resp_cur, resplen,
 		rr->rr_srv.srv_target, &dn_cur, 
 		rr->rr_srv.srv_target + DNSR_MAX_NAME ) < 0 ) {
 	    return( -1 );
@@ -644,7 +644,7 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 }
 
     int
-_dnsr_display_header( struct dnsr_header *h)
+dnsr_display_header( struct dnsr_header *h)
 {
     uint16_t	flags;
 
@@ -741,7 +741,7 @@ _dnsr_display_header( struct dnsr_header *h)
  */
 
     int
-_dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
+dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
     char *string_begin )
 {
     uint8_t		len, i;
@@ -784,7 +784,7 @@ _dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
  */
 
     int
-_dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
+dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
     uint resplen, char *dn_begin, char **dn_cur, char *dn_end )
 {
     uint8_t		len = 0;		// Length of label;
@@ -809,7 +809,7 @@ _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
 	    }
 
 	    offset_cur = resp_begin + offset;
-	    if ( _dnsr_labels_to_name( dnsr, resp_begin, &offset_cur,
+	    if ( dnsr_labels_to_name( dnsr, resp_begin, &offset_cur,
 		    resplen, dn_begin, dn_cur, dn_end ) < 0 ) {
 		return( -1 );
 	    }

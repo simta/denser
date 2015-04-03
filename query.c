@@ -25,7 +25,7 @@
 #include "timeval.h"
 #include "bprint.h"
 
-static int _dn_to_labels( DNSR *dnsr, char *dn, char *labels );
+static int dn_to_labels( DNSR *dnsr, char *dn, char *labels );
 
 struct question {
     uint16_t   q_type;
@@ -381,7 +381,7 @@ dnsr_reverse_ip( DNSR *dnsr, char *ip, char *suffix )
 }
 
     static int
-_dn_to_labels( DNSR *dnsr, char *dn, char *labels )
+dn_to_labels( DNSR *dnsr, char *dn, char *labels )
 {
     char	*label = NULL, *p = NULL;
     int		i = 0, len = 0, done = 0;
@@ -458,7 +458,7 @@ _dn_to_labels( DNSR *dnsr, char *dn, char *labels )
  */
 
     int
-_dnsr_send_query( DNSR *dnsr, int ns )
+dnsr_send_query( DNSR *dnsr, int ns )
 {
     struct dnsr_header	    *h;
     char                    *query;
@@ -497,7 +497,7 @@ _dnsr_send_query( DNSR *dnsr, int ns )
 	return( -1 );
     }
 
-    DEBUG( _dnsr_display_header( (struct dnsr_header*)query ));
+    DEBUG( dnsr_display_header( (struct dnsr_header*)query ));
 
     if ( gettimeofday( &dnsr->d_querytime, NULL ) < 0 ) {
 	DEBUG( perror( "gettimeofday" ));
@@ -520,7 +520,7 @@ _dnsr_send_query( DNSR *dnsr, int ns )
  */
 
    char * 
-_dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
+dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 {
 
     char 		*resp_tcp = NULL;
@@ -533,14 +533,14 @@ _dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 
     if (( fd = socket( dnsr->d_nsinfo[ ns ].ns_sa.ss_family,
             SOCK_STREAM, 0 )) < 0 ) {
-	DEBUG( perror( "_dnsr_send_query_tcp: socket" ));
+	DEBUG( perror( "dnsr_send_query_tcp: socket" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( NULL );
     }
 
     if ( connect( fd, (struct sockaddr*)&dnsr->d_nsinfo[ ns ].ns_sa,
 	    sizeof( struct sockaddr_storage )) != 0 ) {
-	DEBUG( perror( "_dnsr_send_query_tcp: connect" ));
+	DEBUG( perror( "dnsr_send_query_tcp: connect" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
@@ -560,14 +560,14 @@ _dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 
     len = htons( querylen );
     if ( write( fd, &len, sizeof( len )) != sizeof( len )) {
-	DEBUG( perror( "_dnsr_send_query_tcp: send" ));
+	DEBUG( perror( "dnsr_send_query_tcp: send" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
     DEBUG( fprintf( stderr, "wrote len %d\n", len ));
 
     if ( write( fd, query, (size_t)querylen ) != querylen ) {
-	DEBUG( perror( "_dnsr_send_query_tcp: send" ));
+	DEBUG( perror( "dnsr_send_query_tcp: send" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
@@ -575,7 +575,7 @@ _dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
     DEBUG( bprint( query, (size_t)querylen ));
 
     if (( rc = read( fd, &len, sizeof( len ))) != sizeof( len )) {
-	DEBUG( perror( "_dnsr_send_query_tcp: read" ));
+	DEBUG( perror( "dnsr_send_query_tcp: read" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	goto error;
     }
@@ -592,10 +592,10 @@ _dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
     while ( size < len ) {
 	if (( rc = read( fd, &resp_tcp[ size ], len )) <= 0 ) {
 	    if ( rc == 0 ) {
-		DEBUG( fprintf( stderr, "_dnsr_send_query_tcp: read: closed" ));
+		DEBUG( fprintf( stderr, "dnsr_send_query_tcp: read: closed" ));
 		dnsr->d_errno = DNSR_ERROR_CONNECTION_CLOSED;
 	    } else {
-		DEBUG( perror( "_dnsr_send_query_tcp: read" ));
+		DEBUG( perror( "dnsr_send_query_tcp: read" ));
 		dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	    }
 	    goto error;
@@ -676,7 +676,7 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
      * it's corresponding query can't be too big, so we don't have
      * to check the size.
      */
-    if (( i = _dn_to_labels( dnsr, dnsr->d_dn,
+    if (( i = dn_to_labels( dnsr, dnsr->d_dn,
             &dnsr->d_query[ dnsr->d_querylen ] )) < 0 ) {
         return( -1 );
     }
@@ -726,7 +726,7 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
 
     /* Send query to NS 0 */
     DEBUG( fprintf( stderr, "sending query to: 0\n" ));
-    if ( _dnsr_send_query( dnsr, 0 ) != 0 ) {
+    if ( dnsr_send_query( dnsr, 0 ) != 0 ) {
 	if ( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
 	    return( -1 );
 	}

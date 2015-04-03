@@ -25,11 +25,11 @@
 #include "timeval.h"
 #include "bprint.h"
 
-static int _dnsr_parse_resolv( DNSR *dnsr );
-static int _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index );
-static void _dnsr_nameserver_reset( DNSR *dnsr );
+static int dnsr_parse_resolv( DNSR *dnsr );
+static int dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index );
+static void dnsr_nameserver_reset( DNSR *dnsr );
 
-static char *dnsr_resolvconf_path = _DNSR_RESOLV_CONF_PATH;
+static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
 
 /*
  * TODO:  accept an auth section to configure name servers
@@ -43,14 +43,14 @@ dnsr_nameserver( DNSR *dnsr, char *server )
     int			rc;
 
     /* Clear any existing nameservers */
-    _dnsr_nameserver_reset( dnsr );
+    dnsr_nameserver_reset( dnsr );
 
     if ( server == NULL ) {
-	if (( rc = _dnsr_parse_resolv( dnsr )) != 0 ) {
+	if (( rc = dnsr_parse_resolv( dnsr )) != 0 ) {
 	    return( rc );
 	}
     } else {
-	if (( rc = _dnsr_nameserver_add( dnsr, server, 0 )) != 0 ) {
+	if (( rc = dnsr_nameserver_add( dnsr, server, 0 )) != 0 ) {
 	    return( rc );
 	}
 	dnsr->d_nscount++;
@@ -58,7 +58,7 @@ dnsr_nameserver( DNSR *dnsr, char *server )
 
     /* Set default NS */
     if ( dnsr->d_nscount == 0 ) {
-	if (( rc = _dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", 0 )) != 0 ) {
+	if (( rc = dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", 0 )) != 0 ) {
 	    return( rc );
 	}
 	dnsr->d_nscount++;
@@ -103,7 +103,7 @@ dnsr_config( DNSR *dnsr, int flag, int toggle )
  */
 
     static int
-_dnsr_parse_resolv( DNSR *dnsr )
+dnsr_parse_resolv( DNSR *dnsr )
 {
     int				len, rc;
     uint			linenum = 0;
@@ -146,7 +146,7 @@ _dnsr_parse_resolv( DNSR *dnsr )
 
 	if ( strcmp( argv[ 0 ], "nameserver" ) == 0 ) {
 	    if ( dnsr->d_nscount < DNSR_MAX_NS ) {
-		if (( rc = _dnsr_nameserver_add( dnsr, argv[ 1 ],
+		if (( rc = dnsr_nameserver_add( dnsr, argv[ 1 ],
 			dnsr->d_nscount )) > 0 ) {
 		    return( rc );
                 } else if ( rc == 0 ) {
@@ -174,7 +174,7 @@ _dnsr_parse_resolv( DNSR *dnsr )
 }
 
     static int
-_dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
+dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
 {
     struct addrinfo     hints;
     struct addrinfo     *result;
@@ -223,7 +223,7 @@ _dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
 }
 
     void
-_dnsr_nameserver_reset( DNSR *dnsr )
+dnsr_nameserver_reset( DNSR *dnsr )
 {
     int		i;
 

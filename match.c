@@ -18,7 +18,7 @@
 #include "internal.h"
 
     int
-_dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
+dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 {
     int		i, j;
 
@@ -32,13 +32,13 @@ _dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 	}
 
 	for ( j = 0; j < result->r_ancount; j++ ) {
-	    if ( _dnsr_match_ip( dnsr, &result->r_additional[ i ],
+	    if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
 		    &result->r_answer[ j ] ) < 0 ) {
 		return( 0 );
 	    }
 	}
 	for ( j = 0; j < result->r_nscount; j++ ) {
-	    if ( _dnsr_match_ip( dnsr, &result->r_additional[ i ],
+	    if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
 		    &result->r_ns[ j ] ) < 0 ) {
 		return( 0 );
 	    }
@@ -48,7 +48,7 @@ _dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 }
 
     int
-_dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
+dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
 {
     struct ip_info	*ip_info, *prev_ip_info;
     struct sockaddr_in  *addr4;
