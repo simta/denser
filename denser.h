@@ -230,8 +230,13 @@ struct rr_soa {
 };
 
 /* 3.3.14. TXT RDATA format */
+struct txt_string {
+    char        s_string[ DNSR_MAX_STRING + 1 ];
+    struct      txt_string *s_next;
+};
+
 struct rr_txt {
-    char	t_txt[ DNSR_MAX_STRING + 1 ];
+    struct txt_string  *txt_data;
 };
 
 /* 

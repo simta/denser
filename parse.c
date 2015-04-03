@@ -328,7 +328,6 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
     char		*dn_cur;
     char		*resp_end;
     DEBUG( char                buf[ INET6_ADDRSTRLEN ] );
-
     resp_end = resp_begin + resplen;
 
     /* Parse common RR info */
@@ -474,14 +473,24 @@ _dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 	break;
 
     case DNSR_TYPE_TXT:
-	dn_cur = rr->rr_txt.t_txt;
-	if ( _dnsr_labels_to_string( dnsr, resp_cur, resp_begin + resplen,
-		rr->rr_txt.t_txt ) < 0 ) {
-	    return( -1 );
-	}
-	DEBUG( fprintf( stderr, "%s\n", rr->rr_txt.t_txt));
-	break;
-
+        {
+            /* RFC 1035 3.3.14 TXT RDATA format
+             * TXT-DATA        One or more <character-string>s.
+             */
+            char *txt_end = *resp_cur + rr->rr_rdlength;
+            struct txt_string **txt_string = &rr->rr_txt.txt_data;
+            while ( *resp_cur < txt_end ) {
+                *txt_string = malloc( sizeof( struct txt_string ));
+                memset( *txt_string, 0, sizeof( struct txt_string ));
+                if ( _dnsr_labels_to_string( dnsr, resp_cur, txt_end,
+                        (*txt_string)->s_string ) < 0 ) {
+                    return( -1 );
+                }
+                DEBUG( fprintf( stderr, "txt: %s\n", (*txt_string)->s_string ));
+                txt_string = &(*txt_string)->s_next;
+            }
+            break;
+        }
     /* XXX - this case needs review */
     case DNSR_TYPE_A:
 	{
@@ -735,7 +744,7 @@ _dnsr_display_header( struct dnsr_header *h)
 _dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
     char *string_begin )
 {
-    uint		len, i;
+    uint8_t		len, i;
 
     if ( *resp_cur >= resp_end ) {
 	DEBUG( fprintf( stderr, "labels_to_string: no resp\n" ));
@@ -743,9 +752,10 @@ _dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
 	return( -1 );
     }
     len = **resp_cur;
+    DEBUG( fprintf( stderr, "labels_to_string: length: %u\n", len ));
     (*resp_cur)++;
 
-    if ( *resp_cur + len > resp_end || len > DNSR_MAX_STRING ) {
+    if (( *resp_cur + len > resp_end ) || ( len > DNSR_MAX_STRING )) {
 	DEBUG( fprintf( stderr, "labels_to_string: invalid length\n" ));
 	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
 	return( -1 );
@@ -806,9 +816,8 @@ _dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
 	    /* Advance past compression */
 	    (*resp_cur) += 2;
 	    return( 0 );
-
 	} else if ( offset & DNSR_EXTENDED_LABEL ) {
-            fprintf( stderr, "labels_to_name: extended label found\n" );
+            fprintf( stderr, "labels_to_name: extended label found: %d\n", offset );
         } else {
 	    if ( *resp_cur >= resp_begin + resplen ) {
 		DEBUG( fprintf( stderr, "labels_to_string: no resp\n" ));
