@@ -75,6 +75,8 @@ struct dnsr_header {
     uint16_t   h_arcount;
 };
 
+void dnsr_free_ip_info( struct ip_info * );
+void dnsr_free_txt_string( struct txt_string * );
 int _dnsr_display_header( struct dnsr_header *h );
 char * _dnsr_send_query_tcp( DNSR *, int, int * );
 int _dnsr_validate_resp( DNSR *, char *, struct sockaddr * );

@@ -304,29 +304,55 @@ dnsr_free_result( struct dnsr_result *result )
 	return;
     }
 
-    /* FIXME: Shouldn't this iterate over the linked lists? */
     if ( result->r_ancount > 0 ) {
 	for ( i = 0; i < result->r_ancount; i++ ) {
-	    free( result->r_answer[ i ].rr_ip );
+            dnsr_free_ip_info( result->r_answer[ i ].rr_ip );
+            if ( result->r_answer[ i ].rr_type == DNSR_TYPE_TXT ) {
+                dnsr_free_txt_string( result->r_answer[ i ].rr_txt.txt_data );
+            }
 	}
 	free( result->r_answer );
     }
 
     if ( result->r_nscount > 0 ) {
 	for ( i = 0; i < result->r_nscount; i++ ) {
-	    free( result->r_ns[ i ].rr_ip );
+	    dnsr_free_ip_info( result->r_ns[ i ].rr_ip );
 	}
 	free( result->r_ns );
     }
 
     if ( result->r_arcount > 0 ) {
 	for ( i = 0; i < result->r_arcount; i++ ) {
-	    free( result->r_additional[ i ].rr_ip );
+	    dnsr_free_ip_info( result->r_additional[ i ].rr_ip );
 	}
 	free( result->r_additional );
     }
 
     free( result );
+}
+
+    void
+dnsr_free_ip_info( struct ip_info *i )
+{
+    struct ip_info      *next;
+
+    while ( i != NULL ) {
+        next = i->ip_next;
+        free( i );
+        i = next;
+    }
+}
+
+    void
+dnsr_free_txt_string( struct txt_string *t )
+{
+    struct txt_string   *next;
+
+    while ( t != NULL ) {
+        next = t->s_next;
+        free( t );
+        t = next;
+    }
 }
 
     int
