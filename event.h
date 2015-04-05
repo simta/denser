@@ -1,3 +1,6 @@
+#ifndef DENSER_EVENT_H
+#define DENSER_EVENT_H
+
 #define DNSR_STATE_START 0
 #define DNSR_STATE_ASK 1
 #define DNSR_STATE_WAIT 2
@@ -7,3 +10,5 @@ struct event {
     int         e_type;
     int         e_value;
 };
+
+#endif /* DENSER_EVENT_H */

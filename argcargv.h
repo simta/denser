@@ -1,3 +1,6 @@
+#ifndef DENSER_ARGCARGV_H
+#define DENSER_ARGCARGV_H
+
 #define argcargv(X, Y) (acav_parse( NULL, X, Y ))
 
 typedef struct {
@@ -7,3 +10,5 @@ typedef struct {
 ACAV* acav_alloc( void );
 int acav_parse( ACAV *acav, char *, char *** );
 int acav_free( ACAV *acav );
+
+#endif /* DENSER_ARGCARGV_H */

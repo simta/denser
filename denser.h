@@ -1,3 +1,10 @@
+#ifndef DENSER_H
+#define DENSER_H
+
+#include <netinet/in.h>
+#include <sys/time.h>
+#include <inttypes.h>
+
 /* Size limits ( rfc 1035 2.3.4 ) */
 #define DNSR_MAX_FIELD	2        /* Field width in bytes */
 #define DNSR_MAX_LABEL	63  
@@ -349,3 +356,5 @@ int dnsr_free( DNSR *dnsr );
 void dnsr_free_result( struct dnsr_result *result );
 
 int dnsr_send_query( DNSR *dnsr, int ns );
+
+#endif /* DENSER_H */

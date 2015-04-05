@@ -1,3 +1,8 @@
+#ifndef DENSER_INTERNAL_H
+#define DENSER_INTERNAL_H
+
+#include "denser.h"
+
 #ifdef __APPLE__
 #define socklen_t int
 #endif
@@ -87,3 +92,5 @@ int dnsr_parse_rr( DNSR *, struct dnsr_rr *, struct dnsr_result *, char *, char 
 char * dnsr_send_query_tcp( DNSR *, int, int * );
 int dnsr_validate_resp( DNSR *, char *, struct sockaddr * );
 int dnsr_validate_result( DNSR *, struct dnsr_result * );
+
+#endif /* DENSER_INTERNAL_H */

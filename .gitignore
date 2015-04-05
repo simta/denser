@@ -12,6 +12,7 @@ Makefile.in
 VERSION
 aclocal.m4
 autom4te.cache
+compile
 config.guess
 config.h
 config.h.in
@@ -29,3 +30,5 @@ ltmain.sh
 m4/libtool.m4
 m4/lt*.m4
 missing
+packaging/pkgconfig/denser.pc
+packaging/rpm/denser.spec
