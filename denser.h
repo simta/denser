@@ -237,13 +237,13 @@ struct rr_soa {
 };
 
 /* 3.3.14. TXT RDATA format */
-struct txt_string {
+struct dnsr_string {
     char        s_string[ DNSR_MAX_STRING + 1 ];
-    struct      txt_string *s_next;
+    struct      dnsr_string *s_next;
 };
 
 struct rr_txt {
-    struct txt_string  *txt_data;
+    struct dnsr_string  *txt_data;
 };
 
 /* 

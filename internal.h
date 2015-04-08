@@ -83,7 +83,7 @@ struct dnsr_header {
 struct dnsr_result *dnsr_create_result( DNSR *, char *, int );
 int dnsr_display_header( struct dnsr_header *h );
 void dnsr_free_ip_info( struct ip_info * );
-void dnsr_free_txt_string( struct txt_string * );
+void dnsr_free_dnsr_string( struct dnsr_string * );
 int dnsr_labels_to_name( DNSR *, char *, char **, unsigned int, char *, char **, char * );
 int dnsr_labels_to_string( DNSR *, char **, char *, char * );
 int dnsr_match_additional( DNSR *, struct dnsr_result * );

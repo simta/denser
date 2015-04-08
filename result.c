@@ -308,7 +308,7 @@ dnsr_free_result( struct dnsr_result *result )
 	for ( i = 0; i < result->r_ancount; i++ ) {
             dnsr_free_ip_info( result->r_answer[ i ].rr_ip );
             if ( result->r_answer[ i ].rr_type == DNSR_TYPE_TXT ) {
-                dnsr_free_txt_string( result->r_answer[ i ].rr_txt.txt_data );
+                dnsr_free_dnsr_string( result->r_answer[ i ].rr_txt.txt_data );
             }
 	}
 	free( result->r_answer );
@@ -344,9 +344,9 @@ dnsr_free_ip_info( struct ip_info *i )
 }
 
     void
-dnsr_free_txt_string( struct txt_string *t )
+dnsr_free_dnsr_string( struct dnsr_string *t )
 {
-    struct txt_string   *next;
+    struct dnsr_string   *next;
 
     while ( t != NULL ) {
         next = t->s_next;

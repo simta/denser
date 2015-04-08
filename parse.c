@@ -478,16 +478,16 @@ dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
              * TXT-DATA        One or more <character-string>s.
              */
             char *txt_end = *resp_cur + rr->rr_rdlength;
-            struct txt_string **txt_string = &rr->rr_txt.txt_data;
+            struct dnsr_string **dnsr_string = &rr->rr_txt.txt_data;
             while ( *resp_cur < txt_end ) {
-                *txt_string = malloc( sizeof( struct txt_string ));
-                memset( *txt_string, 0, sizeof( struct txt_string ));
+                *dnsr_string = malloc( sizeof( struct dnsr_string ));
+                memset( *dnsr_string, 0, sizeof( struct dnsr_string ));
                 if ( dnsr_labels_to_string( dnsr, resp_cur, txt_end,
-                        (*txt_string)->s_string ) < 0 ) {
+                        (*dnsr_string)->s_string ) < 0 ) {
                     return( -1 );
                 }
-                DEBUG( fprintf( stderr, "txt: %s\n", (*txt_string)->s_string ));
-                txt_string = &(*txt_string)->s_next;
+                DEBUG( fprintf( stderr, "txt: %s\n", (*dnsr_string)->s_string ));
+                dnsr_string = &(*dnsr_string)->s_next;
             }
             break;
         }

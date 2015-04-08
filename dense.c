@@ -136,7 +136,7 @@ print_rr( struct dnsr_rr *rr )
 
     case DNSR_TYPE_TXT:
         {
-        struct txt_string *txt;
+        struct dnsr_string *txt;
         txt = rr->rr_txt.txt_data;
 	printf( "\tTXT" );
         while ( txt != NULL ) {
