@@ -340,12 +340,12 @@ struct dnsr_rr {
 DNSR * dnsr_new( void );
 int dnsr_nameserver( DNSR *dnsr, char *server );
 int dnsr_config( DNSR *dnsr, int flag, int toggle );
-int dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn );
+int dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn );
 struct dnsr_result* dnsr_result( DNSR *dnsr, struct timeval *timeout );
 int dnsr_result_expired( DNSR *dnsr, struct dnsr_result *result );
 
-char * dnsr_ntoptr( DNSR *, int, const void *, char * );
-char * dnsr_reverse_ip( DNSR *, char *, char * );
+char * dnsr_ntoptr( DNSR *, int, const void *, const char * );
+char * dnsr_reverse_ip( DNSR *, const char *, const char * );
 
 int dnsr_errno( DNSR *dnser );
 void dnsr_errclear( DNSR *dnser );

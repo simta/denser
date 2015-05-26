@@ -305,7 +305,7 @@ struct lookup lookup_class[] = {
 };
 
     char *
-dnsr_ntoptr( DNSR *dnsr, int af, const void *src, char *suffix )
+dnsr_ntoptr( DNSR *dnsr, int af, const void *src, const char *suffix )
 {
     char	    *res;
     char            *p;
@@ -362,7 +362,7 @@ dnsr_ntoptr( DNSR *dnsr, int af, const void *src, char *suffix )
 }
 
     char *
-dnsr_reverse_ip( DNSR *dnsr, char *ip, char *suffix )
+dnsr_reverse_ip( DNSR *dnsr, const char *ip, const char *suffix )
 {
     int             af = AF_INET;
     struct in_addr  ipaddr;
@@ -616,7 +616,7 @@ error:
 }
 
     int
-dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
+dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn )
 {
     int                 i, len;
     struct dnsr_header	*h;
@@ -643,18 +643,16 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, char *dn )
 	return( -1 );
     }
 
-    /* XXX - Do I have to check for trailing '\0' ? */
-    len = strlen( dn );
-    if ( dn[ len - 1 ] == '.' ) {
-	dn[ len ] = '\0';
-	len--;
-    }
-    if ( len > DNSR_MAX_NAME ) {
+    if (( len = strlen( dn )) > DNSR_MAX_NAME ) {
 	DEBUG( fprintf( stderr, "dnsr_query: dn too long\n" ));
 	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
 	return( -1 );
     }
     strcpy( dnsr->d_dn, dn );
+    if ( dnsr->d_dn[ len - 1 ] == '.' ) {
+        dnsr->d_dn[ len ] = '\0';
+        len--;
+    }
 
     dnsr->d_id = rand( ) & 0xffff;
     dnsr->d_querylen = 0;
