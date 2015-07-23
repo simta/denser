@@ -93,7 +93,7 @@ struct dnsr {
     int                 d_nscount;
     int                 d_nsresp;
     int                 d_fd;
-    int                 d_af;
+    int                 d_fd6;
     struct timeval      d_querytime;
 };
 

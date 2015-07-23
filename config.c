@@ -193,13 +193,11 @@ dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
 
     memset( &hints, 0, sizeof( struct addrinfo ));
 
-    hints.ai_family = dnsr->d_af;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
-    if ( dnsr->d_af == AF_INET6 ) {
-        hints.ai_flags |= AI_V4MAPPED | AI_ALL;
-    }
 
-    if ((s = getaddrinfo( nameserver, DNSR_DEFAULT_PORT, &hints, &result )) != 0 ) {
+    if (( s = getaddrinfo( nameserver, DNSR_DEFAULT_PORT, &hints, &result ))) {
         DEBUG( fprintf( stderr,
                 "getaddrinfo: %s\n", gai_strerror( s )));
         dnsr->d_errno = DNSR_ERROR_CONFIG;
@@ -210,7 +208,7 @@ dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
     if ( result->ai_family == AF_INET ) {
         memcpy( &(dnsr->d_nsinfo[ index ].ns_sa), result->ai_addr,
                 sizeof( struct sockaddr_in ));
-    } else if ( dnsr->d_af == AF_INET6 ) {
+    } else if ( result->ai_family == AF_INET6 ) {
         memcpy( &(dnsr->d_nsinfo[ index ].ns_sa), result->ai_addr,
                 sizeof( struct sockaddr_in6 ));
     } else {

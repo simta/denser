@@ -328,7 +328,7 @@ void dnsr_errclear( DNSR *dnser );
 char * dnsr_err2string( int dnsr_errno );
 void dnsr_perror( DNSR *dnsr, const char *s );
 
-int dnsr_free( DNSR *dnsr );
+void dnsr_free( DNSR *dnsr );
 void dnsr_free_result( struct dnsr_result *result );
 
 int dnsr_send_query( DNSR *dnsr, int ns );

@@ -464,6 +464,7 @@ dnsr_send_query( DNSR *dnsr, int ns )
     char                    *query;
     char                    buf[ DNSR_MAX_UDP ];
     size_t                  querylen;
+    ssize_t                 rc;
 
     if ( dnsr->d_nsinfo[ ns ].ns_edns == DNSR_EDNS_BAD ) {
         /* EDNS is bad, strip it off */
@@ -478,7 +479,7 @@ dnsr_send_query( DNSR *dnsr, int ns )
         querylen = dnsr->d_querylen;
     }
 
-    if ( querylen > dnsr->d_nsinfo[ ns ].ns_udp ) {  
+    if ( querylen > dnsr->d_nsinfo[ ns ].ns_udp ) {
         DEBUG( fprintf( stderr, "query is too large for UDP on ns %d", ns ));
         dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
         return( -1 );
@@ -489,9 +490,16 @@ dnsr_send_query( DNSR *dnsr, int ns )
     h->h_id = htons( dnsr->d_id ^ dnsr->d_nsinfo[ ns ].ns_id );
 
     /* Send query */
-    if (( sendto( dnsr->d_fd, query, querylen, 0,
-	    (struct sockaddr *)&dnsr->d_nsinfo[ ns ].ns_sa,
-	    sizeof( struct sockaddr_storage ))) != querylen ) {
+    if ( dnsr->d_nsinfo[ ns ].ns_sa.ss_family == AF_INET ) {
+        rc = sendto( dnsr->d_fd, query, querylen, 0,
+                (struct sockaddr *)&dnsr->d_nsinfo[ ns ].ns_sa,
+                sizeof( struct sockaddr_in ));
+    } else {
+        rc = sendto( dnsr->d_fd6, query, querylen, 0,
+                (struct sockaddr *)&dnsr->d_nsinfo[ ns ].ns_sa,
+                sizeof( struct sockaddr_in6 ));
+    }
+    if ( rc != querylen ) {
 	DEBUG( perror( "sendto" ));
 	dnsr->d_errno = DNSR_ERROR_SYSTEM;
 	return( -1 );

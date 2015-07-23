@@ -332,10 +332,7 @@ main( int argc, char* argv[] )
     }
 
     dnsr_free_result( result );
-    if ( dnsr_free( dnsr ) != 0 ) {
-	perror( "dnsr_free_result" );
-	exit( 1 );
-    }
+    dnsr_free( dnsr );
 
     exit( 0 );
 }

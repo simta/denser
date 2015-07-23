@@ -41,6 +41,7 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
     char		resp[ DNSR_MAX_UDP ];
     char		*resp_tcp = NULL;
     int			rc, error, resplen, resp_errno = DNSR_ERROR_NONE;
+    int                 fd;
     fd_set		fdset;
     struct dnsr_result	*result = NULL;
     struct timeval	cur;	/* Current time */
@@ -142,9 +143,15 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	     * a temp error, or mark is down if it is fatal.
 	     */
 	    FD_ZERO( &fdset );
-	    FD_SET( dnsr->d_fd, &fdset );
-	    if (( rc = select( dnsr->d_fd + 1, &fdset, NULL, NULL,
-		    &wait )) < 0 ) {
+            if ( dnsr->d_fd ) {
+	        FD_SET( dnsr->d_fd, &fdset );
+            }
+            if ( dnsr->d_fd6 ) {
+                FD_SET( dnsr->d_fd6, &fdset );
+            }
+	    if (( rc = select(
+                    (dnsr->d_fd > dnsr->d_fd6 ? dnsr->d_fd : dnsr->d_fd6 ) + 1,
+                    &fdset, NULL, NULL, &wait )) < 0 ) {
 		DEBUG( perror( "select" ));
 		dnsr->d_errno = DNSR_ERROR_SYSTEM;
 		return( NULL );
@@ -156,7 +163,11 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 		break;
 	    }
 
-	    if ( ! FD_ISSET( dnsr->d_fd, &fdset )) {
+            if ( FD_ISSET( dnsr->d_fd6, &fdset )) {
+                fd = dnsr->d_fd6;
+            } else if ( FD_ISSET( dnsr->d_fd, &fdset )) {
+                fd = dnsr->d_fd;
+            } else {
 		DEBUG( fprintf( stderr, "select: wrong fd\n" ));
 		/* XXX - error value? */
 		dnsr->d_errno = DNSR_ERROR_FD_SET;
@@ -165,8 +176,8 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    /* Get response */
 
 	    /* XXX - OS X doesn't have socklen_t */
-	    if (( resplen = recvfrom( dnsr->d_fd, &resp, DNSR_MAX_UDP, 0,
-		    (struct sockaddr*)&reply_from, &socklen )) < 0 ) {
+	    if (( resplen = recvfrom( fd, &resp, DNSR_MAX_UDP, 0,
+		    (struct sockaddr *)&reply_from, &socklen )) < 0 ) {
 		DEBUG( perror( "recvfrom" ));
 		dnsr->d_errno = DNSR_ERROR_SYSTEM;
 		return( NULL );
@@ -243,7 +254,6 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    return( result );
 
 	case DNSR_STATE_ASK:
-	    
 	    DEBUG( fprintf( stderr, "ASK_STATE\n" ));
 	    if ( eventlist[ dnsr->d_state ].e_value < dnsr->d_nscount ) {
 		/* Check if NS is valid & alive */

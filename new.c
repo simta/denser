@@ -22,10 +22,10 @@
  * calls.  This only fails on system error.  Other functions have been moved
  * out of this routine so they can provide better error reporting via
  * the DNSR->d_errno.
- * 
- * returned dnsr handle is configured for recursion.  Can be changed with
+ *
+ * The returned dnsr handle is configured for recursion.  Can be changed with
  * dnsr_config( ).
- * 
+ *
  * Return Values:
  *	DNSR *	success
  *	NULL 	error - check errno
@@ -42,22 +42,25 @@ dnsr_new( void )
     }
     srand( (unsigned int)getpid( ) ^ tv.tv_usec ^ tv.tv_sec );
 
-    if (( dnsr = malloc( sizeof( DNSR ))) == NULL ) {
+    if (( dnsr = calloc( 1, sizeof( DNSR ))) == NULL ) {
 	return( NULL );
     }
 
-    memset( dnsr, 0, sizeof( DNSR ));
     dnsr->d_nsresp = -1;
 
-    if (( dnsr->d_fd = socket( AF_INET6, SOCK_DGRAM, 0 )) < 0 ) {
-        if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
-	    DEBUG( perror( "dnsr_open: socket" ));
-	    free( dnsr );
-	    return( NULL );
-        }
-        dnsr->d_af = AF_INET;
-    } else {
-        dnsr->d_af = AF_INET6;
+    if (( dnsr->d_fd6 = socket( AF_INET6, SOCK_DGRAM, 0 )) < 0 ) {
+        dnsr->d_fd6 = 0;
+        DEBUG( perror( "dnsr_open: AF_INET6 socket" ));
+    }
+
+    if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
+        dnsr->d_fd = 0;
+	DEBUG( perror( "dnsr_open: AF_INET socket" ));
+    }
+
+    if (( dnsr->d_fd6 == 0 ) && ( dnsr->d_fd == 0 )) {
+        free( dnsr );
+        return( NULL );
     }
 
     /* XXX - do we need to check error here? */
@@ -66,17 +69,21 @@ dnsr_new( void )
     return( dnsr );
 }
 
-    int
+    void
 dnsr_free( DNSR *dnsr )
 {
     if ( dnsr == NULL ) {
-	return( 0 );
+	return;
     }
-    if ( close( dnsr->d_fd ) != 0 ) {
-	DEBUG( perror( "dnsr_free: close" ));
-	return( -1 );
+    if ( dnsr->d_fd ) {
+        if ( close( dnsr->d_fd ) != 0 ) {
+            DEBUG( perror( "dnsr_free: close" ));
+        }
+    }
+    if ( dnsr->d_fd6 ) {
+        if ( close( dnsr->d_fd6 ) != 0 ) {
+            DEBUG( perror( "dnsr_free: close" ));
+        }
     }
     free( dnsr );
-
-    return( 0 );
 }
