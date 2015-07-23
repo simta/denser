@@ -115,31 +115,7 @@ struct dnsr_result {
     struct dnsr_rr 		*r_additional;
 };
 
-struct nsinfo {
-    uint16_t		        ns_id;
-    int                         ns_asked;
-    int                         ns_edns;
-    uint16_t                    ns_udp;
-    struct sockaddr_storage     ns_sa;
-};
-
-typedef struct {
-    uint16_t		d_id;
-    uint16_t		d_flags;
-    char		d_dn[ DNSR_MAX_NAME + 1 ];
-    char		d_query[ DNSR_MAX_UDP ];
-    size_t              d_questionlen;
-    size_t              d_querylen;
-    int			d_querysent;
-    int			d_state;
-    int			d_errno;
-    struct nsinfo	d_nsinfo[ DNSR_MAX_NS ];
-    int			d_nscount;
-    int			d_nsresp;
-    int			d_fd;
-    int                 d_af;
-    struct timeval 	d_querytime;
-} DNSR;
+typedef struct dnsr DNSR;
 
 /* 
  * 3.3. Standard RRs
