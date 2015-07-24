@@ -1,0 +1,15 @@
+dnsr_new
+dnsr_nameserver
+dnsr_config
+dnsr_query
+dnsr_result
+dnsr_result_expired
+dnsr_ntoptr
+dnsr_reverse_ip
+dnsr_errno
+dnsr_errclear
+dnsr_err2string
+dnsr_perror
+dnsr_free
+dnsr_free_result
+dnsr_send_query
