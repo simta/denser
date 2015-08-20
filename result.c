@@ -143,10 +143,10 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	     * a temp error, or mark is down if it is fatal.
 	     */
 	    FD_ZERO( &fdset );
-            if ( dnsr->d_fd ) {
+            if ( dnsr->d_fd >= 0 ) {
 	        FD_SET( dnsr->d_fd, &fdset );
             }
-            if ( dnsr->d_fd6 ) {
+            if ( dnsr->d_fd6 >= 0 ) {
                 FD_SET( dnsr->d_fd6, &fdset );
             }
 	    if (( rc = select(

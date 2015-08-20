@@ -49,16 +49,14 @@ dnsr_new( void )
     dnsr->d_nsresp = -1;
 
     if (( dnsr->d_fd6 = socket( AF_INET6, SOCK_DGRAM, 0 )) < 0 ) {
-        dnsr->d_fd6 = 0;
         DEBUG( perror( "dnsr_open: AF_INET6 socket" ));
     }
 
     if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
-        dnsr->d_fd = 0;
 	DEBUG( perror( "dnsr_open: AF_INET socket" ));
     }
 
-    if (( dnsr->d_fd6 == 0 ) && ( dnsr->d_fd == 0 )) {
+    if (( dnsr->d_fd6 < 0 ) && ( dnsr->d_fd < 0 )) {
         free( dnsr );
         return( NULL );
     }
@@ -75,12 +73,12 @@ dnsr_free( DNSR *dnsr )
     if ( dnsr == NULL ) {
 	return;
     }
-    if ( dnsr->d_fd ) {
+    if ( dnsr->d_fd >= 0 ) {
         if ( close( dnsr->d_fd ) != 0 ) {
             DEBUG( perror( "dnsr_free: close" ));
         }
     }
-    if ( dnsr->d_fd6 ) {
+    if ( dnsr->d_fd6 >= 0 ) {
         if ( close( dnsr->d_fd6 ) != 0 ) {
             DEBUG( perror( "dnsr_free: close" ));
         }
