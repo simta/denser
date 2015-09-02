@@ -12,7 +12,7 @@ libdnsr_la_LDFLAGS = -export-symbols libdnsr.sym
 dense_SOURCES = dense.c
 dense_LDADD = libdnsr.la
 
-EXTRA_DIST = VERSION packaging/rpm/denser.spec
+EXTRA_DIST = VERSION libdnsr.sym packaging/rpm/denser.spec
 
 rpm: dist-gzip
 	rpmbuild -ta $(distdir).tar.gz
