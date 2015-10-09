@@ -72,11 +72,11 @@
 #endif
 
 struct nsinfo {
+    struct sockaddr_storage     ns_sa;
     uint16_t                    ns_id;
+    uint16_t                    ns_udp;
     int                         ns_asked;
     int                         ns_edns;
-    uint16_t                    ns_udp;
-    struct sockaddr_storage     ns_sa;
 };
 
 struct dnsr {

@@ -25,7 +25,7 @@ int densetype( char *type );
 int print_rr( struct dnsr_rr *rr );
 
 struct densetype {
-    char	*dt_name;
+    const char	*dt_name;
     int		dt_value;
 } densetypes[] = {
     { "A",	DNSR_TYPE_A },

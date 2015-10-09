@@ -106,13 +106,13 @@
 #define DNSR_ERROR_UNKNOWN		32	/* Unknown error */
 
 struct dnsr_result {
-    uint16_t                    r_rcode;
+    struct dnsr_rr              *r_answer;
+    struct dnsr_rr              *r_ns;
+    struct dnsr_rr              *r_additional;
     unsigned int 		r_ancount;
-    struct dnsr_rr 		*r_answer;
     unsigned int		r_nscount;
-    struct dnsr_rr		*r_ns;
     unsigned int		r_arcount;
-    struct dnsr_rr 		*r_additional;
+    uint16_t                    r_rcode;
 };
 
 typedef struct dnsr DNSR;
@@ -214,8 +214,8 @@ struct rr_soa {
 
 /* 3.3.14. TXT RDATA format */
 struct dnsr_string {
-    char        s_string[ DNSR_MAX_STRING + 1 ];
-    struct      dnsr_string *s_next;
+    struct dnsr_string      *s_next;
+    char                    s_string[ DNSR_MAX_STRING + 1 ];
 };
 
 struct rr_txt {
@@ -245,23 +245,23 @@ struct rr_srv {
 
 /* RFC 6891 OPT record */
 struct edns_opt {
+    struct edns_opt     *opt_next;
+    uint8_t             *opt_data;
     uint16_t            opt_code;
     uint16_t            opt_len;
-    uint8_t             *opt_data;
-    struct edns_opt     *opt_next;
 };
 
 struct rr_opt {
+    struct edns_opt     *opt_opt;
     uint8_t             opt_rcode;
     uint8_t             opt_version;
     uint16_t            opt_flags;
     uint16_t            opt_udp;
-    struct edns_opt     *opt_opt;
 };
 
 struct ip_info {
-    struct sockaddr_storage     ip_sa;
     struct ip_info              *ip_next;
+    struct sockaddr_storage     ip_sa;
 };
 
 struct dnsr_rr {
@@ -310,7 +310,7 @@ struct dnsr_rr {
 #define rr_srv rr_u.rd_srv
         struct rr_opt   rd_opt;
 #define rr_opt rr_u.rd_opt
-    } rr_u; 
+    } rr_u;
 };
 
 DNSR * dnsr_new( void );
