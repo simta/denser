@@ -51,6 +51,10 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
     struct sockaddr_storage	reply_from; 
     socklen_t 		socklen;
 
+    if ( !dnsr ) {
+        return( NULL );
+    }
+
     if ( !dnsr->d_querysent ) {
 	DEBUG( fprintf( stderr, "dnsr_result: query not sent\n" ));
 	dnsr->d_errno = DNSR_ERROR_NO_QUERY;

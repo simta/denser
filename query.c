@@ -630,6 +630,10 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn )
     struct dnsr_header	*h;
     struct question     q;
 
+    if ( !dnsr ) {
+        return( -1 );
+    }
+
     /* If dnsr handle has not been configured, do so now */
     if ( dnsr->d_nscount == 0 ) {
 	if ( dnsr_nameserver( dnsr, NULL ) != 0 ) {
