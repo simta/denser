@@ -817,7 +817,9 @@ dnsr_labels_to_name( DNSR *dnsr, char *resp_begin, char **resp_cur,
 	    (*resp_cur) += 2;
 	    return( 0 );
 	} else if ( offset & DNSR_EXTENDED_LABEL ) {
-            fprintf( stderr, "labels_to_name: extended label found: %d\n", offset );
+            DEBUG( fprintf( stderr, "labels_to_name: extended label found: %d\n", offset ));
+            dnsr->d_errno = DNSR_ERROR_PARSE;
+            return( -1 );
         } else {
 	    if ( *resp_cur >= resp_begin + resplen ) {
 		DEBUG( fprintf( stderr, "labels_to_string: no resp\n" ));
