@@ -627,6 +627,12 @@ dnsr_parse_rr( DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
 	DEBUG( fprintf( stderr, "parse_rr: %d: unknown type\n", rr->rr_type ));
 	DEBUG( fprintf( stderr, "parse_rr: skipping %d bytes\n",
 	    rr->rr_rdlength ));
+        if (( *resp_cur + rr->rr_rdlength ) > resp_end ) {
+            DEBUG( fprintf( stderr, "parse_rr: invalid rdlength\n" ));
+            dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+            return( -1 );
+        }
+
 	*resp_cur += rr->rr_rdlength;
     }
 
