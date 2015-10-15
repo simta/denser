@@ -314,7 +314,7 @@ struct dnsr_rr {
 };
 
 DNSR * dnsr_new( void );
-int dnsr_nameserver( DNSR *dnsr, char *server );
+int dnsr_nameserver( DNSR *dnsr, const char *server );
 int dnsr_config( DNSR *dnsr, int flag, int toggle );
 int dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn );
 struct dnsr_result* dnsr_result( DNSR *dnsr, struct timeval *timeout );

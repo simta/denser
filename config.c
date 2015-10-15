@@ -38,7 +38,7 @@ static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
  */
 
     int
-dnsr_nameserver( DNSR *dnsr, char *server )
+dnsr_nameserver( DNSR *dnsr, const char *server )
 {
     int			rc;
 
