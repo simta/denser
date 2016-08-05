@@ -156,10 +156,16 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    if (( rc = select(
                     (dnsr->d_fd > dnsr->d_fd6 ? dnsr->d_fd : dnsr->d_fd6 ) + 1,
                     &fdset, NULL, NULL, &wait )) < 0 ) {
-		DEBUG( perror( "select" ));
-		dnsr->d_errno = DNSR_ERROR_SYSTEM;
-		return( NULL );
-	    } else if ( rc == 0 ) {
+                if ( errno == EINTR ) {
+                    /* Break out to recalculate timeout */
+                    break;
+                }
+                DEBUG( perror( "select" ));
+                dnsr->d_errno = DNSR_ERROR_SYSTEM;
+                return( NULL );
+	    }
+
+            if ( rc == 0 ) {
 		/* Break out of wait state */
 		DEBUG( fprintf( stderr, "dnsr_result: select timed out\n" ));
 		DEBUG( fprintf( stderr, "advancing state\n" ));
@@ -180,11 +186,13 @@ dnsr_result( DNSR *dnsr, struct timeval *timeout )
 	    /* Get response */
 
 	    /* XXX - OS X doesn't have socklen_t */
-	    if (( resplen = recvfrom( fd, &resp, DNSR_MAX_UDP, 0,
+	    while (( resplen = recvfrom( fd, &resp, DNSR_MAX_UDP, 0,
 		    (struct sockaddr *)&reply_from, &socklen )) < 0 ) {
-		DEBUG( perror( "recvfrom" ));
-		dnsr->d_errno = DNSR_ERROR_SYSTEM;
-		return( NULL );
+                if ( resplen != EINTR ) {
+		    DEBUG( perror( "recvfrom" ));
+		    dnsr->d_errno = DNSR_ERROR_SYSTEM;
+		    return( NULL );
+                }
 	    }
 	    DEBUG( fprintf( stderr, "received %d bytes\n", resplen ));
 	    DEBUG( {  
