@@ -1,0 +1,23 @@
+## v0.4
+
+* fixed null pointer dereference
+* fixed buffer overrun
+* fixed infinite loop in response parsing
+* added EINTR handling
+* broke ABI compatibility by repacking structs
+
+## v0.3
+
+* fixed file descriptor bug
+* fixed packaging
+
+## v0.2
+
+* updated build system
+* added RPM packaging
+* added IPv6 support
+* added EDNS(0) support
+* cleaned up file cruft
+* fixed segfault in dnsr_perror
+* fixed TXT record lookup
+* fixed memory leak
