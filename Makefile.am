@@ -14,5 +14,5 @@ dense_LDADD = libdnsr.la
 
 EXTRA_DIST = VERSION libdnsr.sym packaging/rpm/denser.spec
 
-rpm: dist-gzip
-	rpmbuild -ta $(distdir).tar.gz
+rpm: dist-xz
+	rpmbuild -ta $(distdir).tar.xz
