@@ -26,7 +26,7 @@
 #include "bprint.h"
 
 static int dnsr_parse_resolv( DNSR *dnsr );
-static int dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index );
+static int dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index );
 static void dnsr_nameserver_reset( DNSR *dnsr );
 
 static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
@@ -174,7 +174,7 @@ dnsr_parse_resolv( DNSR *dnsr )
 }
 
     static int
-dnsr_nameserver_add( DNSR *dnsr, char *nameserver, int index )
+dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index )
 {
     struct addrinfo     hints;
     struct addrinfo     *result;
