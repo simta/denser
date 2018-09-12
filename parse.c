@@ -761,7 +761,7 @@ dnsr_labels_to_string( DNSR *dnsr, char **resp_cur, char *resp_end,
     DEBUG( fprintf( stderr, "labels_to_string: length: %u\n", len ));
     (*resp_cur)++;
 
-    if (( *resp_cur + len > resp_end ) || ( len > DNSR_MAX_STRING )) {
+    if ( *resp_cur + len > resp_end ) {
 	DEBUG( fprintf( stderr, "labels_to_string: invalid length\n" ));
 	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
 	return( -1 );
