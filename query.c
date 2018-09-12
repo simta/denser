@@ -411,13 +411,17 @@ dn_to_labels( DNSR *dnsr, char *dn, char *labels )
         /* Find label */
         if (( p = strchr( label, '.' )) == NULL ) {
             done = 1;
+            len = strlen( label );
         } else {
-            *p = '\0';
+            len = p - label;
         }
-        if (( len = strlen( label )) > 63 ) {
-            if ( !done ) {
-                *p = '.';
-            }
+
+        if ( len == 0 ) {
+            DEBUG( fprintf( stderr, "dn_to_labels: %s: empty label\n",
+                dn ));
+            dnsr->d_errno = DNSR_ERROR_FORMAT;
+            return( -1 );
+        } else if ( len > 63 ) {
             DEBUG( fprintf( stderr, "dn_to_labels: %s: label too long\n",
                 dn ));
             dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
@@ -431,8 +435,7 @@ dn_to_labels( DNSR *dnsr, char *dn, char *labels )
             break;
         }
 
-        *p++ = '.';
-        label = p;
+        label = p + 1;
     }
 
     if ( i > 255 ) {
