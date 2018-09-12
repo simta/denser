@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) Regents of The University of Michigan
  * See COPYING.
  */
@@ -33,45 +33,45 @@ struct question {
 };
 
 struct lookup {
-    int		l_key;
-    int		l_value;
+    int         l_key;
+    int         l_value;
 };
 
 struct lookup lookup_type[] = {
-    { 0,		-1 },
-    { DNSR_TYPE_A,	DNSR_TYPE_A },      /* Host address */
-    { DNSR_TYPE_NS,	DNSR_TYPE_NS },     /* Authoritative name server */
-    { DNSR_TYPE_MD,	DNSR_TYPE_MD },     /* Mail destination */
-    { DNSR_TYPE_MF,	DNSR_TYPE_MF },     /* Mail forwarder */
-    { DNSR_TYPE_CNAME,	DNSR_TYPE_CNAME },  /* Canonical name for an alias */
-    { DNSR_TYPE_SOA,	DNSR_TYPE_SOA },    /* Start of a zone of authority */
-    { DNSR_TYPE_MB,	DNSR_TYPE_MB },     /* Mailbox domain */
-    { DNSR_TYPE_MG,	DNSR_TYPE_MG },     /* Mail group member */
-    { DNSR_TYPE_MR,	DNSR_TYPE_MR },     /* Mail rename domain name */
-    { DNSR_TYPE_NULL,	DNSR_TYPE_NULL },   /* Null RR */
-    { DNSR_TYPE_WKS,	DNSR_TYPE_WKS },    /* Well known service description */
-    { DNSR_TYPE_PTR,	DNSR_TYPE_PTR },    /* Domain name pointer */
-    { DNSR_TYPE_HINFO,	DNSR_TYPE_HINFO },  /* Host information */
-    { DNSR_TYPE_MINFO,	DNSR_TYPE_MINFO },  /* Mailbox or mail list info */
-    { DNSR_TYPE_MX,	DNSR_TYPE_MX },     /* Mail exchange */
-    { DNSR_TYPE_TXT,	DNSR_TYPE_TXT },    /* Text string */
-    { 17,	-1 },
-    { 18,	-1 },
-    { 19,	-1 },
-    { 20,	-1 },
-    { 21,	-1 },
-    { 22,	-1 },
-    { 23,	-1 },
-    { 24,	-1 },
-    { 25,	-1 },
-    { 26,	-1 },
-    { 27,	-1 },
-    { DNSR_TYPE_AAAA,	DNSR_TYPE_AAAA },   /* IPv6 record, RFC 3596 */
-    { 29,	-1 },
-    { 30,	-1 },
-    { 31,	-1 },
-    { 32,	-1 },
-    { DNSR_TYPE_SRV,	DNSR_TYPE_SRV },     /* Service Record RFC 2728 */
+    { 0,                -1 },
+    { DNSR_TYPE_A,      DNSR_TYPE_A },      /* Host address */
+    { DNSR_TYPE_NS,     DNSR_TYPE_NS },     /* Authoritative name server */
+    { DNSR_TYPE_MD,     DNSR_TYPE_MD },     /* Mail destination */
+    { DNSR_TYPE_MF,     DNSR_TYPE_MF },     /* Mail forwarder */
+    { DNSR_TYPE_CNAME,  DNSR_TYPE_CNAME },  /* Canonical name for an alias */
+    { DNSR_TYPE_SOA,    DNSR_TYPE_SOA },    /* Start of a zone of authority */
+    { DNSR_TYPE_MB,     DNSR_TYPE_MB },     /* Mailbox domain */
+    { DNSR_TYPE_MG,     DNSR_TYPE_MG },     /* Mail group member */
+    { DNSR_TYPE_MR,     DNSR_TYPE_MR },     /* Mail rename domain name */
+    { DNSR_TYPE_NULL,   DNSR_TYPE_NULL },   /* Null RR */
+    { DNSR_TYPE_WKS,    DNSR_TYPE_WKS },    /* Well known service description */
+    { DNSR_TYPE_PTR,    DNSR_TYPE_PTR },    /* Domain name pointer */
+    { DNSR_TYPE_HINFO,  DNSR_TYPE_HINFO },  /* Host information */
+    { DNSR_TYPE_MINFO,  DNSR_TYPE_MINFO },  /* Mailbox or mail list info */
+    { DNSR_TYPE_MX,     DNSR_TYPE_MX },     /* Mail exchange */
+    { DNSR_TYPE_TXT,    DNSR_TYPE_TXT },    /* Text string */
+    { 17,       -1 },
+    { 18,       -1 },
+    { 19,       -1 },
+    { 20,       -1 },
+    { 21,       -1 },
+    { 22,       -1 },
+    { 23,       -1 },
+    { 24,       -1 },
+    { 25,       -1 },
+    { 26,       -1 },
+    { 27,       -1 },
+    { DNSR_TYPE_AAAA,   DNSR_TYPE_AAAA },   /* IPv6 record, RFC 3596 */
+    { 29,       -1 },
+    { 30,       -1 },
+    { 31,       -1 },
+    { 32,       -1 },
+    { DNSR_TYPE_SRV,    DNSR_TYPE_SRV },     /* Service Record RFC 2728 */
     { 34,     -1 },
     { 35,     -1 },
     { 36,     -1 },
@@ -297,17 +297,17 @@ struct lookup lookup_type[] = {
 };
 
 struct lookup lookup_class[] = {
-    { 0,		-1 },
-    { DNSR_CLASS_IN,	1 },		/* Internet */
+    { 0,                -1 },
+    { DNSR_CLASS_IN,    1 },            /* Internet */
     { 2,                -1 },           /* Available */
-    { DNSR_CLASS_CH,	3 },		/* CHAOS */
-    { DNSR_CLASS_HS, 	4 }		/* HESIOD */
+    { DNSR_CLASS_CH,    3 },            /* CHAOS */
+    { DNSR_CLASS_HS,    4 }             /* HESIOD */
 };
 
     char *
 dnsr_ntoptr( DNSR *dnsr, int af, const void *src, const char *suffix )
 {
-    char	    *res;
+    char            *res;
     char            *p;
     int             i, reverselen;
     uint8_t         *iparr;
@@ -338,9 +338,9 @@ dnsr_ntoptr( DNSR *dnsr, int af, const void *src, const char *suffix )
     }
 
     if (( res = (char*)malloc( reverselen )) == NULL ) {
-	DEBUG( perror( "malloc" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( NULL );
+        DEBUG( perror( "malloc" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( NULL );
     }
     memset( res, 0, reverselen );
 
@@ -383,8 +383,8 @@ dnsr_reverse_ip( DNSR *dnsr, const char *ip, const char *suffix )
     static int
 dn_to_labels( DNSR *dnsr, char *dn, char *labels )
 {
-    char	*label = NULL, *p = NULL;
-    int		i = 0, len = 0, done = 0;
+    char        *label = NULL, *p = NULL;
+    int         i = 0, len = 0, done = 0;
 
     dnsr->d_errno = 0;
 
@@ -392,75 +392,75 @@ dn_to_labels( DNSR *dnsr, char *dn, char *labels )
     len = strlen( dn );
     if ( len > DNSR_MAX_HOSTNAME ) {
         DEBUG( fprintf( stderr, "dn_to_labels: dn too long\n" ));
-	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
-	return( -1 );
+        dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+        return( -1 );
     }
     /* XXX - check length of domain name */
     if ( dn[ len - 1 ] == '.' ) {
-	dn[ len - 1 ] = (char)'\0';
-	len--;
+        dn[ len - 1 ] = (char)'\0';
+        len--;
     }
     if ( len == 0 ) {
-	labels[ i++ ] = 0;
-	return( i );
+        labels[ i++ ] = 0;
+        return( i );
     }
 
     label = dn;
 
-    for ( ; ; ) { 
-	/* Find label */
-	if (( p = strchr( label, '.' )) == NULL ) {
-	    done = 1;
-	} else {
-	    *p = '\0';
-	}
-	if (( len = strlen( label )) > 63 ) {
-	    if ( !done ) {
-		*p = '.';
-	    }
-	    DEBUG( fprintf( stderr, "dn_to_labels: %s: label too long\n",
-		dn ));
-	    dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
-	    return( -1 );
-	}
-	labels[ i++ ] = len;
-	memcpy( &labels[ i ], label, (size_t)len );
-	i += len;
-	if ( done ) {
-	    labels[ i++ ] = 0;
-	    break;
-	}
+    for ( ; ; ) {
+        /* Find label */
+        if (( p = strchr( label, '.' )) == NULL ) {
+            done = 1;
+        } else {
+            *p = '\0';
+        }
+        if (( len = strlen( label )) > 63 ) {
+            if ( !done ) {
+                *p = '.';
+            }
+            DEBUG( fprintf( stderr, "dn_to_labels: %s: label too long\n",
+                dn ));
+            dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+            return( -1 );
+        }
+        labels[ i++ ] = len;
+        memcpy( &labels[ i ], label, (size_t)len );
+        i += len;
+        if ( done ) {
+            labels[ i++ ] = 0;
+            break;
+        }
 
-	*p++ = '.';
-	label = p;
+        *p++ = '.';
+        label = p;
     }
 
     if ( i > 255 ) {
-	fprintf( stderr, "%s: dn too long\n", dn );
-	return( -1 );
+        fprintf( stderr, "%s: dn too long\n", dn );
+        return( -1 );
     }
     return( i );
 }
 
 /*
- * This function sends a query to a nameserver. 
+ * This function sends a query to a nameserver.
  *
  * Arguments:
- *	A dnsr that has been initalized with dnsr_new and a query.
+ *      A dnsr that has been initalized with dnsr_new and a query.
  *
- *	An int indexing the nameserver listed in dnsr where packet is
- *	to be sent.
+ *      An int indexing the nameserver listed in dnsr where packet is
+ *      to be sent.
  *
  * Return:
- *	< 1	System error
- *	0	OK
- *	>1	Temporary error
+ *      < 1     System error
+ *      0       OK
+ *      >1      Temporary error
  */
 
     int
 dnsr_send_query( DNSR *dnsr, int ns )
 {
-    struct dnsr_header	    *h;
+    struct dnsr_header      *h;
     char                    *query;
     char                    buf[ DNSR_MAX_UDP ];
     size_t                  querylen;
@@ -500,17 +500,17 @@ dnsr_send_query( DNSR *dnsr, int ns )
                 sizeof( struct sockaddr_in6 ));
     }
     if ( rc != querylen ) {
-	DEBUG( perror( "sendto" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( -1 );
+        DEBUG( perror( "sendto" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( -1 );
     }
 
     DEBUG( dnsr_display_header( (struct dnsr_header*)query ));
 
     if ( gettimeofday( &dnsr->d_querytime, NULL ) < 0 ) {
-	DEBUG( perror( "gettimeofday" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( -1 );
+        DEBUG( perror( "gettimeofday" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( -1 );
     }
     dnsr->d_querysent = 1;
     dnsr->d_nsinfo[ ns ].ns_asked = 1;
@@ -527,30 +527,30 @@ dnsr_send_query( DNSR *dnsr, int ns )
  * to parse it.
  */
 
-   char * 
+   char *
 dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 {
 
-    char 		*resp_tcp = NULL;
-    int			fd;
-    ssize_t		size = 0, rc;
+    char                *resp_tcp = NULL;
+    int                 fd;
+    ssize_t             size = 0, rc;
     struct dnsr_header  *h;
     char                buf[ DNSR_MAX_UDP ];
     char                *query;
-    uint16_t		querylen, len;
+    uint16_t            querylen, len;
 
     if (( fd = socket( dnsr->d_nsinfo[ ns ].ns_sa.ss_family,
             SOCK_STREAM, 0 )) < 0 ) {
-	DEBUG( perror( "dnsr_send_query_tcp: socket" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( NULL );
+        DEBUG( perror( "dnsr_send_query_tcp: socket" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( NULL );
     }
 
     if ( connect( fd, (struct sockaddr*)&dnsr->d_nsinfo[ ns ].ns_sa,
-	    sizeof( struct sockaddr_storage )) != 0 ) {
-	DEBUG( perror( "dnsr_send_query_tcp: connect" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	goto error;
+            sizeof( struct sockaddr_storage )) != 0 ) {
+        DEBUG( perror( "dnsr_send_query_tcp: connect" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        goto error;
     }
 
     if ( dnsr->d_nsinfo[ ns ].ns_edns == DNSR_EDNS_BAD ) {
@@ -568,49 +568,49 @@ dnsr_send_query_tcp( DNSR *dnsr, int ns, int *resplen )
 
     len = htons( querylen );
     if ( write( fd, &len, sizeof( len )) != sizeof( len )) {
-	DEBUG( perror( "dnsr_send_query_tcp: send" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	goto error;
+        DEBUG( perror( "dnsr_send_query_tcp: send" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        goto error;
     }
     DEBUG( fprintf( stderr, "wrote len %d\n", len ));
 
     if ( write( fd, query, (size_t)querylen ) != querylen ) {
-	DEBUG( perror( "dnsr_send_query_tcp: send" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	goto error;
+        DEBUG( perror( "dnsr_send_query_tcp: send" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        goto error;
     }
     DEBUG( fprintf( stderr, "wrote query\n" ));
     DEBUG( bprint( query, (size_t)querylen ));
 
     if (( rc = read( fd, &len, sizeof( len ))) != sizeof( len )) {
-	DEBUG( perror( "dnsr_send_query_tcp: read" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	goto error;
+        DEBUG( perror( "dnsr_send_query_tcp: read" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        goto error;
     }
     len = ntohs( len );
     *resplen = len;
     DEBUG( fprintf( stderr, "response len: %d\n", len ));
 
     if (( resp_tcp = malloc( len )) == NULL ) {
-	DEBUG( perror( "malloc" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	goto error;
+        DEBUG( perror( "malloc" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        goto error;
     }
 
     while ( size < len ) {
-	if (( rc = read( fd, &resp_tcp[ size ], len )) <= 0 ) {
-	    if ( rc == 0 ) {
-		DEBUG( fprintf( stderr, "dnsr_send_query_tcp: read: closed" ));
-		dnsr->d_errno = DNSR_ERROR_CONNECTION_CLOSED;
-	    } else {
-		DEBUG( perror( "dnsr_send_query_tcp: read" ));
-		dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	    }
-	    goto error;
-	}
-	size += rc;
+        if (( rc = read( fd, &resp_tcp[ size ], len )) <= 0 ) {
+            if ( rc == 0 ) {
+                DEBUG( fprintf( stderr, "dnsr_send_query_tcp: read: closed" ));
+                dnsr->d_errno = DNSR_ERROR_CONNECTION_CLOSED;
+            } else {
+                DEBUG( perror( "dnsr_send_query_tcp: read" ));
+                dnsr->d_errno = DNSR_ERROR_SYSTEM;
+            }
+            goto error;
+        }
+        size += rc;
     }
-	
+
     DEBUG( fprintf( stderr, "response\n" ));
     DEBUG( bprint( resp_tcp, len ));
 
@@ -627,7 +627,7 @@ error:
 dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn )
 {
     int                 i, len;
-    struct dnsr_header	*h;
+    struct dnsr_header  *h;
     struct question     q;
 
     if ( !dnsr ) {
@@ -636,29 +636,29 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn )
 
     /* If dnsr handle has not been configured, do so now */
     if ( dnsr->d_nscount == 0 ) {
-	if ( dnsr_nameserver( dnsr, NULL ) != 0 ) {
-	    return( -1 );
-	}
+        if ( dnsr_nameserver( dnsr, NULL ) != 0 ) {
+            return( -1 );
+        }
     }
 
     /* Check for valid type */
     if (( qtype <= 0 ) || ( qtype > DNSR_MAX_TYPE )
-	    || ( lookup_type[ qtype ].l_value != qtype )) {
-	dnsr->d_errno = DNSR_ERROR_TYPE;
-	return( -1 );
+            || ( lookup_type[ qtype ].l_value != qtype )) {
+        dnsr->d_errno = DNSR_ERROR_TYPE;
+        return( -1 );
     }
 
     /* Check for valid type */
     if (( qclass <= 0 ) || ( qclass > DNSR_MAX_CLASS )
-	    || ( lookup_class[ qclass ].l_value != qclass )) {
-	dnsr->d_errno = DNSR_ERROR_CLASS;
-	return( -1 );
+            || ( lookup_class[ qclass ].l_value != qclass )) {
+        dnsr->d_errno = DNSR_ERROR_CLASS;
+        return( -1 );
     }
 
     if (( len = strlen( dn )) > DNSR_MAX_NAME ) {
-	DEBUG( fprintf( stderr, "dnsr_query: dn too long\n" ));
-	dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
-	return( -1 );
+        DEBUG( fprintf( stderr, "dnsr_query: dn too long\n" ));
+        dnsr->d_errno = DNSR_ERROR_SIZELIMIT_EXCEEDED;
+        return( -1 );
     }
     strcpy( dnsr->d_dn, dn );
     if ( dnsr->d_dn[ len - 1 ] == '.' ) {
@@ -737,9 +737,9 @@ dnsr_query( DNSR *dnsr, uint16_t qtype, uint16_t qclass, const char *dn )
     /* Send query to NS 0 */
     DEBUG( fprintf( stderr, "sending query to: 0\n" ));
     if ( dnsr_send_query( dnsr, 0 ) != 0 ) {
-	if ( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
-	    return( -1 );
-	}
+        if ( dnsr->d_errno == DNSR_ERROR_SYSTEM ) {
+            return( -1 );
+        }
     }
 
     dnsr->d_state = 0;

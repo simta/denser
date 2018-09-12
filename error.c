@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) Regents of The University of Michigan
  * See COPYING.
  */
@@ -14,8 +14,8 @@
 #include "internal.h"
 
 struct dnsr_error {
-    int		e_errno;
-    char	*e_string;
+    int         e_errno;
+    char        *e_string;
 };
 
 static struct dnsr_error dnsr_error_txt[ DNSR_MAX_ERRNO + 2 ] = {
@@ -72,9 +72,9 @@ dnsr_err2string( int dnsr_errno )
 {
     /* check if < 0 or > max, and then just return as offest */
     if ( dnsr_errno < 0 || dnsr_errno > DNSR_MAX_ERRNO ) {
-	return( dnsr_error_txt[ DNSR_ERROR_UNKNOWN ].e_string );
+        return( dnsr_error_txt[ DNSR_ERROR_UNKNOWN ].e_string );
     } else {
-	return( dnsr_error_txt[ dnsr_errno ].e_string );
+        return( dnsr_error_txt[ dnsr_errno ].e_string );
     }
 }
 

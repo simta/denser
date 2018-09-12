@@ -8,19 +8,19 @@
 #endif
 
 /* OpCode ( RFC 6895 2.2 ) */
-#define DNSR_OP_QUERY	0	/* Standard query */
-#define DNSR_OP_IQUERY	1	/* Inverse query (OBSOLETE) */
-#define DNSR_OP_STATUS	2	/* Server status request */
+#define DNSR_OP_QUERY   0       /* Standard query */
+#define DNSR_OP_IQUERY  1       /* Inverse query (OBSOLETE) */
+#define DNSR_OP_STATUS  2       /* Server status request */
 #define DNSR_OP_NOTIFY  4       /* Notification of zone change */
 #define DNSR_OP_UPDATE  5       /* Dynamic DNS update */
 
 /* RCODE ( RFC 6895 2.3 ) */
-#define DNSR_RC_OK		0	/* No Error */
-#define DNSR_RC_FORMERR	        1	/* Format Error */
-#define DNSR_RC_SERVFAIL	2	/* Server Failure */
-#define DNSR_RC_NXDOMAIN	3	/* Non-Existent Domain */
-#define DNSR_RC_NOTIMP		4	/* Not Implemented */
-#define DNSR_RC_REFUSED		5	/* Query Refused */
+#define DNSR_RC_OK              0       /* No Error */
+#define DNSR_RC_FORMERR         1       /* Format Error */
+#define DNSR_RC_SERVFAIL        2       /* Server Failure */
+#define DNSR_RC_NXDOMAIN        3       /* Non-Existent Domain */
+#define DNSR_RC_NOTIMP          4       /* Not Implemented */
+#define DNSR_RC_REFUSED         5       /* Query Refused */
 #define DNSR_RC_YXDOMAIN        6       /* Name Exists when it should not */
 #define DNSR_RC_YXRRSET         7       /* RR Set Exists when it should not */
 #define DNSR_RC_NXRRSET         8       /* RR Set that should exist does not */
@@ -46,18 +46,18 @@
 #define DNSR_EDNS_OPT_ECS       8   /* draft-vandergaast-edns-client-subnet */
 #define DNSR_EDNS_OPT_EXPIRE    9   /* RFC 7314 EXPIRE */
 
-#define DNSR_DEFAULT_PORT	"53"
+#define DNSR_DEFAULT_PORT       "53"
 
 /* DNSR bit masks */
-#define DNSR_RESPONSE			0x8000
-#define DNSR_RECURSION_DESIRED		0x0100
-#define DNSR_TRUNCATION			0x0200
-#define DNSR_RECURSION_AVAILABLE	0x0080
-#define DNSR_RCODE			0x000f
-#define DNSR_AUTHORITATIVE_ANSWER	0x0400
-#define DNSR_OPCODE			0x7800
-#define DNSR_Z				0x0070
-#define DNSR_OFFSET			0xc000
+#define DNSR_RESPONSE                   0x8000
+#define DNSR_RECURSION_DESIRED          0x0100
+#define DNSR_TRUNCATION                 0x0200
+#define DNSR_RECURSION_AVAILABLE        0x0080
+#define DNSR_RCODE                      0x000f
+#define DNSR_AUTHORITATIVE_ANSWER       0x0400
+#define DNSR_OPCODE                     0x7800
+#define DNSR_Z                          0x0070
+#define DNSR_OFFSET                     0xc000
 #define DNSR_EXTENDED_LABEL             0x4000
 
 #ifdef sun

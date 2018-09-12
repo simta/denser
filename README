@@ -88,7 +88,7 @@ int dnsr_parse( DNSR dnsr, int section, int type, char *buf, int size )
 
     An integer value giving the size of the buffer.
 
-    On success, this function returns the number of byte writte to buf, or 
+    On success, this function returns the number of byte writte to buf, or
     an error code to indicate the reason for failure.
 
     All data returned by this function will be in an uncompressed state.

@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) Regents of The University of Michigan
  * See COPYING.
  */
@@ -40,28 +40,28 @@ static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
     int
 dnsr_nameserver( DNSR *dnsr, const char *server )
 {
-    int			rc;
+    int                 rc;
 
     /* Clear any existing nameservers */
     dnsr_nameserver_reset( dnsr );
 
     if ( server == NULL ) {
-	if (( rc = dnsr_parse_resolv( dnsr )) != 0 ) {
-	    return( rc );
-	}
+        if (( rc = dnsr_parse_resolv( dnsr )) != 0 ) {
+            return( rc );
+        }
     } else {
-	if (( rc = dnsr_nameserver_add( dnsr, server, 0 )) != 0 ) {
-	    return( rc );
-	}
-	dnsr->d_nscount++;
+        if (( rc = dnsr_nameserver_add( dnsr, server, 0 )) != 0 ) {
+            return( rc );
+        }
+        dnsr->d_nscount++;
     }
 
     /* Set default NS */
     if ( dnsr->d_nscount == 0 ) {
-	if (( rc = dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", 0 )) != 0 ) {
-	    return( rc );
-	}
-	dnsr->d_nscount++;
+        if (( rc = dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", 0 )) != 0 ) {
+            return( rc );
+        }
+        dnsr->d_nscount++;
     }
 
     return( 0 );
@@ -72,27 +72,27 @@ dnsr_config( DNSR *dnsr, int flag, int toggle )
 {
     switch( flag ) {
     case DNSR_FLAG_RECURSION:
-	switch( toggle ) {
-	case DNSR_FLAG_ON:
-	    dnsr->d_flags = dnsr->d_flags | DNSR_RECURSION_DESIRED;
-	    break;
+        switch( toggle ) {
+        case DNSR_FLAG_ON:
+            dnsr->d_flags = dnsr->d_flags | DNSR_RECURSION_DESIRED;
+            break;
 
-	case DNSR_FLAG_OFF:
-	    dnsr->d_flags = dnsr->d_flags & ~DNSR_RECURSION_DESIRED;
-	    break;
+        case DNSR_FLAG_OFF:
+            dnsr->d_flags = dnsr->d_flags & ~DNSR_RECURSION_DESIRED;
+            break;
 
-	default:
-	    DEBUG( fprintf( stderr, "dnsr_config: %d: unknown toggle\n",
-		toggle ));
-	    dnsr->d_errno = DNSR_ERROR_TOGGLE;
-	    return( -1 );
-	}
-	break;
+        default:
+            DEBUG( fprintf( stderr, "dnsr_config: %d: unknown toggle\n",
+                toggle ));
+            dnsr->d_errno = DNSR_ERROR_TOGGLE;
+            return( -1 );
+        }
+        break;
 
     default:
-	DEBUG( fprintf( stderr, "dnsr_config: %d: unknown flag\n", flag ));
-	dnsr->d_errno = DNSR_ERROR_FLAG;
-	return( -1 );
+        DEBUG( fprintf( stderr, "dnsr_config: %d: unknown flag\n", flag ));
+        dnsr->d_errno = DNSR_ERROR_FLAG;
+        return( -1 );
     }
 
     return( 0 );
@@ -105,69 +105,69 @@ dnsr_config( DNSR *dnsr, int flag, int toggle )
     static int
 dnsr_parse_resolv( DNSR *dnsr )
 {
-    int				len, rc;
-    uint			linenum = 0;
-    char			buf[ DNSR_MAX_LINE ];
-    char			**argv;
-    int				argc;
-    FILE			*f;
+    int                         len, rc;
+    uint                        linenum = 0;
+    char                        buf[ DNSR_MAX_LINE ];
+    char                        **argv;
+    int                         argc;
+    FILE                        *f;
 
     if (( f = fopen( dnsr_resolvconf_path, "r" )) == NULL ) {
-	DEBUG( perror( dnsr_resolvconf_path ));
-	/* Not an error if DNSR_RESOLVECONF_PATH missing - not required */
-	if ( errno == ENOENT ) {
-	    errno = 0;
-	    return( 0 );
-	} else {
-	    dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	    return( -1 );
-	}
+        DEBUG( perror( dnsr_resolvconf_path ));
+        /* Not an error if DNSR_RESOLVECONF_PATH missing - not required */
+        if ( errno == ENOENT ) {
+            errno = 0;
+            return( 0 );
+        } else {
+            dnsr->d_errno = DNSR_ERROR_SYSTEM;
+            return( -1 );
+        }
     }
 
     while ( fgets( (char*)&buf, DNSR_MAX_LINE, f ) != 0 ) {
-	linenum++;
+        linenum++;
 
-	len = strlen( buf );
-	if ( buf[ len - 1] != '\n' ) {
-	    DEBUG( fprintf( stderr, "parse_resolve: %s: %d: line too long\n",
-		dnsr_resolvconf_path, linenum ));
-	    continue;
-	}
+        len = strlen( buf );
+        if ( buf[ len - 1] != '\n' ) {
+            DEBUG( fprintf( stderr, "parse_resolve: %s: %d: line too long\n",
+                dnsr_resolvconf_path, linenum ));
+            continue;
+        }
 
-	if (( argc = acav_parse( NULL, buf, &argv )) < 0 ) {
-	    DEBUG( perror( "parse_resolve: acav_parse" ));
-	    dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	    return( -1 );
-	}
+        if (( argc = acav_parse( NULL, buf, &argv )) < 0 ) {
+            DEBUG( perror( "parse_resolve: acav_parse" ));
+            dnsr->d_errno = DNSR_ERROR_SYSTEM;
+            return( -1 );
+        }
 
-	if (( argc == 0 ) || ( *argv[ 0 ] == '#' )) {
-	    continue;
-	}
+        if (( argc == 0 ) || ( *argv[ 0 ] == '#' )) {
+            continue;
+        }
 
-	if ( strcmp( argv[ 0 ], "nameserver" ) == 0 ) {
-	    if ( dnsr->d_nscount < DNSR_MAX_NS ) {
-		if (( rc = dnsr_nameserver_add( dnsr, argv[ 1 ],
-			dnsr->d_nscount )) > 0 ) {
-		    return( rc );
+        if ( strcmp( argv[ 0 ], "nameserver" ) == 0 ) {
+            if ( dnsr->d_nscount < DNSR_MAX_NS ) {
+                if (( rc = dnsr_nameserver_add( dnsr, argv[ 1 ],
+                        dnsr->d_nscount )) > 0 ) {
+                    return( rc );
                 } else if ( rc == 0 ) {
                     dnsr->d_nscount++;
                 }
-	    } else {
-		DEBUG( fprintf( stderr,
-		    "parse_resolve: nameserver %s not added: too many\n",
-		    argv[ 1 ] ));
-	    }
-	}
+            } else {
+                DEBUG( fprintf( stderr,
+                    "parse_resolve: nameserver %s not added: too many\n",
+                    argv[ 1 ] ));
+            }
+        }
     }
     if ( ferror( f )) {
-	DEBUG( perror( "fgets" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( -1 );
+        DEBUG( perror( "fgets" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( -1 );
     }
     if ( fclose( f ) != 0 ) {
-	DEBUG( perror( "fclose" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( -1 );
+        DEBUG( perror( "fclose" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( -1 );
     }
 
     return( 0 );
@@ -181,9 +181,9 @@ dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index )
     int                 s;
 
     if (( index < 0 ) || ( index > DNSR_MAX_NS )) {
-	DEBUG( fprintf( stderr, "%d: index out of range\n", index ));
-	dnsr->d_errno = DNSR_ERROR_CONFIG;
-	return( 1 );
+        DEBUG( fprintf( stderr, "%d: index out of range\n", index ));
+        dnsr->d_errno = DNSR_ERROR_CONFIG;
+        return( 1 );
     }
     DEBUG( fprintf( stderr, "name server %d: %s\n", index, nameserver ));
 
@@ -223,10 +223,10 @@ dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index )
     void
 dnsr_nameserver_reset( DNSR *dnsr )
 {
-    int		i;
+    int         i;
 
     for ( i = 0; i < dnsr->d_nscount; i++ ) {
-	dnsr->d_nsinfo[ i ].ns_id = 0;
+        dnsr->d_nsinfo[ i ].ns_id = 0;
     }
     dnsr->d_nscount = 0;
 }

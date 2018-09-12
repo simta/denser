@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) Regents of The University of Michigan
  * See COPYING.
  */
@@ -27,23 +27,23 @@
  * dnsr_config( ).
  *
  * Return Values:
- *	DNSR *	success
- *	NULL 	error - check errno
+ *      DNSR *  success
+ *      NULL    error - check errno
  */
 
     DNSR *
 dnsr_new( void )
 {
-    DNSR 		*dnsr;
-    struct timeval	tv;
+    DNSR                *dnsr;
+    struct timeval      tv;
 
     if ( gettimeofday( &tv, NULL ) != 0 ) {
-	return( NULL );
+        return( NULL );
     }
     srand( (unsigned int)getpid( ) ^ tv.tv_usec ^ tv.tv_sec );
 
     if (( dnsr = calloc( 1, sizeof( DNSR ))) == NULL ) {
-	return( NULL );
+        return( NULL );
     }
 
     dnsr->d_nsresp = -1;
@@ -53,7 +53,7 @@ dnsr_new( void )
     }
 
     if (( dnsr->d_fd = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
-	DEBUG( perror( "dnsr_open: AF_INET socket" ));
+        DEBUG( perror( "dnsr_open: AF_INET socket" ));
     }
 
     if (( dnsr->d_fd6 < 0 ) && ( dnsr->d_fd < 0 )) {
@@ -71,7 +71,7 @@ dnsr_new( void )
 dnsr_free( DNSR *dnsr )
 {
     if ( dnsr == NULL ) {
-	return;
+        return;
     }
     if ( dnsr->d_fd >= 0 ) {
         if ( close( dnsr->d_fd ) != 0 ) {

@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) Regents of The University of Michigan
  * See COPYING.
  */
@@ -20,29 +20,29 @@
     int
 dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
 {
-    int		i, j;
+    int         i, j;
 
     for ( i = 0; i < result->r_arcount; i++ ) {
-	if (( result->r_additional[ i ].rr_type != DNSR_TYPE_A ) &&
+        if (( result->r_additional[ i ].rr_type != DNSR_TYPE_A ) &&
             ( result->r_additional[ i ].rr_type != DNSR_TYPE_AAAA )) {
-	    DEBUG( printf( "%s rr_type %d\n",
-		    &result->r_additional[ i ].rr_name,
-		    result->r_additional[ i ].rr_type ));
-	    continue;
-	}
+            DEBUG( printf( "%s rr_type %d\n",
+                    &result->r_additional[ i ].rr_name,
+                    result->r_additional[ i ].rr_type ));
+            continue;
+        }
 
-	for ( j = 0; j < result->r_ancount; j++ ) {
-	    if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
-		    &result->r_answer[ j ] ) < 0 ) {
-		return( 0 );
-	    }
-	}
-	for ( j = 0; j < result->r_nscount; j++ ) {
-	    if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
-		    &result->r_ns[ j ] ) < 0 ) {
-		return( 0 );
-	    }
-	}
+        for ( j = 0; j < result->r_ancount; j++ ) {
+            if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
+                    &result->r_answer[ j ] ) < 0 ) {
+                return( 0 );
+            }
+        }
+        for ( j = 0; j < result->r_nscount; j++ ) {
+            if ( dnsr_match_ip( dnsr, &result->r_additional[ i ],
+                    &result->r_ns[ j ] ) < 0 ) {
+                return( 0 );
+            }
+        }
     }
     return( 0 );
 }
@@ -50,7 +50,7 @@ dnsr_match_additional( DNSR *dnsr, struct dnsr_result *result )
     int
 dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
 {
-    struct ip_info	*ip_info, *prev_ip_info;
+    struct ip_info      *ip_info, *prev_ip_info;
     struct sockaddr_in  *addr4;
     struct sockaddr_in6 *addr6;
 
@@ -58,7 +58,7 @@ dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
 
     case DNSR_TYPE_A:
     case DNSR_TYPE_AAAA:
-	return( 0 );
+        return( 0 );
 
     case DNSR_TYPE_CNAME:
     case DNSR_TYPE_MB:
@@ -68,40 +68,40 @@ dnsr_match_ip( DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr )
     case DNSR_TYPE_MR:
     case DNSR_TYPE_NS:
     case DNSR_TYPE_PTR:
-	if ( strcmp( ar_rr->rr_name, rr->rr_dn.dn_name ) != 0 ) {
-	    return( 0 );
-	}
-	break;
-	
+        if ( strcmp( ar_rr->rr_name, rr->rr_dn.dn_name ) != 0 ) {
+            return( 0 );
+        }
+        break;
+
     case DNSR_TYPE_MX:
-	if ( strcmp( ar_rr->rr_name, rr->rr_mx.mx_exchange ) != 0 ) {
-	    return( 0 );
-	}
-	break;
+        if ( strcmp( ar_rr->rr_name, rr->rr_mx.mx_exchange ) != 0 ) {
+            return( 0 );
+        }
+        break;
 
     case DNSR_TYPE_SOA:
-	if ( strcmp( ar_rr->rr_name, rr->rr_soa.soa_mname) != 0 ) {
-	    return( 0 );
-	}
-	break;
+        if ( strcmp( ar_rr->rr_name, rr->rr_soa.soa_mname) != 0 ) {
+            return( 0 );
+        }
+        break;
 
     case DNSR_TYPE_SRV:
-	if ( strcmp( ar_rr->rr_name, rr->rr_srv.srv_target ) != 0 ) {
-	    return( 0 );
-	}
-	break;
+        if ( strcmp( ar_rr->rr_name, rr->rr_srv.srv_target ) != 0 ) {
+            return( 0 );
+        }
+        break;
 
     default:
-	DEBUG( fprintf( stderr, "create_result: unknown type: %d\n",
-	    rr->rr_type ));
-	dnsr->d_errno = DNSR_ERROR_TYPE;
-	return( -1 );
+        DEBUG( fprintf( stderr, "create_result: unknown type: %d\n",
+            rr->rr_type ));
+        dnsr->d_errno = DNSR_ERROR_TYPE;
+        return( -1 );
     }
 
     if (( ip_info = malloc( sizeof( struct ip_info ))) == NULL ) {
-	DEBUG( perror( "malloc" ));
-	dnsr->d_errno = DNSR_ERROR_SYSTEM;
-	return( -1 );
+        DEBUG( perror( "malloc" ));
+        dnsr->d_errno = DNSR_ERROR_SYSTEM;
+        return( -1 );
     }
     memset( ip_info, 0, sizeof( struct ip_info ));
 
