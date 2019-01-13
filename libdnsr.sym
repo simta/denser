@@ -1,5 +1,6 @@
 dnsr_new
 dnsr_nameserver
+dnsr_nameserver_port
 dnsr_config
 dnsr_query
 dnsr_result

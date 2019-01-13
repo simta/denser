@@ -26,7 +26,7 @@
 #include "bprint.h"
 
 static int dnsr_parse_resolv( DNSR *dnsr );
-static int dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index );
+static int dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, const char *port, int index );
 static void dnsr_nameserver_reset( DNSR *dnsr );
 
 static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
@@ -38,7 +38,7 @@ static char *dnsr_resolvconf_path = DNSR_RESOLV_CONF_PATH;
  */
 
     int
-dnsr_nameserver( DNSR *dnsr, const char *server )
+dnsr_nameserver_port( DNSR *dnsr, const char *server, const char *port )
 {
     int                 rc;
 
@@ -50,7 +50,7 @@ dnsr_nameserver( DNSR *dnsr, const char *server )
             return( rc );
         }
     } else {
-        if (( rc = dnsr_nameserver_add( dnsr, server, 0 )) != 0 ) {
+        if (( rc = dnsr_nameserver_add( dnsr, server, port, 0 )) != 0 ) {
             return( rc );
         }
         dnsr->d_nscount++;
@@ -58,13 +58,19 @@ dnsr_nameserver( DNSR *dnsr, const char *server )
 
     /* Set default NS */
     if ( dnsr->d_nscount == 0 ) {
-        if (( rc = dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", 0 )) != 0 ) {
+        if (( rc = dnsr_nameserver_add( dnsr, "INADDR_LOOPBACK", DNSR_DEFAULT_PORT, 0 )) != 0 ) {
             return( rc );
         }
         dnsr->d_nscount++;
     }
 
     return( 0 );
+}
+
+    int
+dnsr_nameserver( DNSR *dnsr, const char *server )
+{
+    return( dnsr_nameserver_port( dnsr, server, DNSR_DEFAULT_PORT ));
 }
 
     int
@@ -147,7 +153,7 @@ dnsr_parse_resolv( DNSR *dnsr )
         if ( strcmp( argv[ 0 ], "nameserver" ) == 0 ) {
             if ( dnsr->d_nscount < DNSR_MAX_NS ) {
                 if (( rc = dnsr_nameserver_add( dnsr, argv[ 1 ],
-                        dnsr->d_nscount )) > 0 ) {
+                        DNSR_DEFAULT_PORT, dnsr->d_nscount )) > 0 ) {
                     return( rc );
                 } else if ( rc == 0 ) {
                     dnsr->d_nscount++;
@@ -174,7 +180,7 @@ dnsr_parse_resolv( DNSR *dnsr )
 }
 
     static int
-dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index )
+dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, const char *port, int index )
 {
     struct addrinfo     hints;
     struct addrinfo     *result;
@@ -197,7 +203,7 @@ dnsr_nameserver_add( DNSR *dnsr, const char *nameserver, int index )
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
 
-    if (( s = getaddrinfo( nameserver, DNSR_DEFAULT_PORT, &hints, &result ))) {
+    if (( s = getaddrinfo( nameserver, port, &hints, &result ))) {
         DEBUG( fprintf( stderr,
                 "getaddrinfo: %s\n", gai_strerror( s )));
         dnsr->d_errno = DNSR_ERROR_CONFIG;
