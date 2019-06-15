@@ -1,14 +1,14 @@
 #ifndef DENSER_ARGCARGV_H
 #define DENSER_ARGCARGV_H
 
-#define argcargv(X, Y) (acav_parse( NULL, X, Y ))
+#define argcargv(X, Y) (acav_parse(NULL, X, Y))
 
 typedef struct {
     unsigned acv_argc;
-    char **acv_argv;
+    char **  acv_argv;
 } ACAV;
-ACAV* acav_alloc( void );
-int acav_parse( ACAV *acav, char *, char *** );
-int acav_free( ACAV *acav );
+ACAV *acav_alloc(void);
+int   acav_parse(ACAV *acav, char *, char ***);
+int   acav_free(ACAV *acav);
 
 #endif /* DENSER_ARGCARGV_H */

@@ -7,8 +7,8 @@
 #define DNSR_STATE_DONE 3
 
 struct event {
-    int         e_type;
-    int         e_value;
+    int e_type;
+    int e_value;
 };
 
 #endif /* DENSER_EVENT_H */
