@@ -1,6 +1,7 @@
-## v0.6 (2025-08-??)
+## v0.6 (2025-08-21)
 
 * added `dnsr_free_val()`
+* added support for querying on non-standard ports
 
 ## v0.5 (2018-09-14)
 
