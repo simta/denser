@@ -107,8 +107,8 @@ struct lookup lookup_class[] = {
 
 char *
 dnsr_ntoptr(DNSR *dnsr, int af, const void *src, const char *suffix) {
-    char *   res;
-    char *   p;
+    char    *res;
+    char    *p;
     int      i, reverselen;
     uint8_t *iparr;
 
@@ -262,7 +262,7 @@ dn_to_labels(DNSR *dnsr, char *dn, char *labels) {
 int
 dnsr_send_query(DNSR *dnsr, int ns) {
     struct dnsr_header *h;
-    char *              query;
+    char               *query;
     char                buf[ DNSR_MAX_UDP ];
     size_t              querylen;
     ssize_t             rc;
@@ -331,12 +331,12 @@ dnsr_send_query(DNSR *dnsr, int ns) {
 char *
 dnsr_send_query_tcp(DNSR *dnsr, int ns, int *resplen) {
 
-    char *              resp_tcp = NULL;
+    char               *resp_tcp = NULL;
     int                 fd;
     ssize_t             size = 0, rc;
     struct dnsr_header *h;
     char                buf[ DNSR_MAX_UDP ];
-    char *              query;
+    char               *query;
     uint16_t            querylen, len;
 
     if ((fd = socket(dnsr->d_nsinfo[ ns ].ns_sa.ss_family, SOCK_STREAM, 0)) <

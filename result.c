@@ -38,11 +38,11 @@ extern struct event eventlist[ 32 ];
 struct dnsr_result *
 dnsr_result(DNSR *dnsr, struct timeval *timeout) {
     char                    resp[ DNSR_MAX_UDP ];
-    char *                  resp_tcp = NULL;
+    char                   *resp_tcp = NULL;
     int                     rc, error, resplen, resp_errno = DNSR_ERROR_NONE;
     int                     fd;
     fd_set                  fdset;
-    struct dnsr_result *    result = NULL;
+    struct dnsr_result     *result = NULL;
     struct timeval          cur;  /* Current time */
     struct timeval          end;  /* Time of timeout */
     struct timeval          ext;  /* Time passed since last query */

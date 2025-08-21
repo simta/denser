@@ -209,9 +209,9 @@ print_rr(struct dnsr_rr *rr) {
 int
 main(int argc, char *argv[]) {
     char                c;
-    char *              name, *host = NULL, *type = "A";
+    char               *name, *host = NULL, *type = "A";
     extern int          optind;
-    DNSR *              dnsr;
+    DNSR               *dnsr;
     int                 i, err = 0, typenum, display_all = 0;
     int                 recursion = 1;
     int                 test_cache = 0;

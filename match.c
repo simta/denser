@@ -47,8 +47,8 @@ dnsr_match_additional(DNSR *dnsr, struct dnsr_result *result) {
 
 int
 dnsr_match_ip(DNSR *dnsr, struct dnsr_rr *ar_rr, struct dnsr_rr *rr) {
-    struct ip_info *     ip_info, *prev_ip_info;
-    struct sockaddr_in * addr4;
+    struct ip_info      *ip_info, *prev_ip_info;
+    struct sockaddr_in  *addr4;
     struct sockaddr_in6 *addr6;
 
     switch (rr->rr_type) {

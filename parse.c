@@ -25,12 +25,12 @@
 #include "internal.h"
 
 struct rr {
-    char *   r_name;
+    char    *r_name;
     uint16_t r_type;
     uint16_t r_class;
     uint32_t r_ttl;
     uint16_t r_rdlength;
-    char *   r_rdata;
+    char    *r_rdata;
 };
 
 /*
@@ -203,7 +203,7 @@ dnsr_validate_result(DNSR *dnsr, struct dnsr_result *result) {
 
 struct dnsr_result *
 dnsr_create_result(DNSR *dnsr, char *resp, int resplen) {
-    char *              resp_cur;
+    char               *resp_cur;
     struct dnsr_header *h;
     int                 i, j;
     struct dnsr_result *result;
@@ -475,7 +475,7 @@ dnsr_parse_rr(DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
         /* RFC 1035 3.3.14 TXT RDATA format
              * TXT-DATA        One or more <character-string>s.
              */
-        char *               txt_end = *resp_cur + rr->rr_rdlength;
+        char                *txt_end = *resp_cur + rr->rr_rdlength;
         struct dnsr_string **dnsr_string = &rr->rr_txt.txt_data;
         while (*resp_cur < txt_end) {
             *dnsr_string = malloc(sizeof(struct dnsr_string));
@@ -534,7 +534,7 @@ dnsr_parse_rr(DNSR *dnsr, struct dnsr_rr *rr, struct dnsr_result *result,
         rr->rr_class = DNSR_CLASS_IN;
         if (rr->rr_rdlength > 0) {
             struct edns_opt *opt;
-            char *           opt_end = *resp_cur + rr->rr_rdlength;
+            char            *opt_end = *resp_cur + rr->rr_rdlength;
 
             if (opt_end > resp_end) {
                 DEBUG(fprintf(stderr, "parse_rr: truncated EDNS rdata\n"));
@@ -787,7 +787,7 @@ dnsr_labels_to_name(DNSR *dnsr, char *resp_begin, char **resp_cur, uint resplen,
     uint8_t  len = 0;    // Length of label;
     uint16_t offset = 0; // Compression offset
     uint     i = 0;      // Offset into a single label
-    char *   offset_cur;
+    char    *offset_cur;
 
     for (;;) {
         memcpy(&offset, *resp_cur, sizeof(offset));

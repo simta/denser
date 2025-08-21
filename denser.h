@@ -251,7 +251,7 @@ struct rr_srv {
 /* RFC 6891 OPT record */
 struct edns_opt {
     struct edns_opt *opt_next;
-    uint8_t *        opt_data;
+    uint8_t         *opt_data;
     uint16_t         opt_code;
     uint16_t         opt_len;
 };
@@ -265,7 +265,7 @@ struct rr_opt {
 };
 
 struct ip_info {
-    struct ip_info *        ip_next;
+    struct ip_info         *ip_next;
     struct sockaddr_storage ip_sa;
 };
 

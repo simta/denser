@@ -113,7 +113,7 @@ dnsr_parse_resolv(DNSR *dnsr) {
     char   buf[ DNSR_MAX_LINE ];
     char **argv;
     int    argc;
-    FILE * f;
+    FILE  *f;
 
     if ((f = fopen(dnsr_resolvconf_path, "r")) == NULL) {
         DEBUG(perror(dnsr_resolvconf_path));

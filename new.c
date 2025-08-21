@@ -33,7 +33,7 @@
 
 DNSR *
 dnsr_new(void) {
-    DNSR *         dnsr;
+    DNSR          *dnsr;
     struct timeval tv;
 
     if (gettimeofday(&tv, NULL) != 0) {
