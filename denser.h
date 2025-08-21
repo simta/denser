@@ -336,6 +336,7 @@ void  dnsr_perror(DNSR *dnsr, const char *s);
 
 void dnsr_free(DNSR *dnsr);
 void dnsr_free_result(struct dnsr_result *result);
+void dnsr_free_val(void *);
 
 int dnsr_send_query(DNSR *dnsr, int ns);
 

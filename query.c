@@ -177,6 +177,11 @@ dnsr_reverse_ip(DNSR *dnsr, const char *ip, const char *suffix) {
     return (dnsr_ntoptr(dnsr, af, &ipaddr.s_addr, suffix));
 }
 
+void
+dnsr_free_val(void *p) {
+    free(p);
+}
+
 static int
 dn_to_labels(DNSR *dnsr, char *dn, char *labels) {
     char *label = NULL, *p = NULL;

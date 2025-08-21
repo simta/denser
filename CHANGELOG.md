@@ -1,3 +1,7 @@
+## v0.6 (2025-08-??)
+
+* added `dnsr_free_val()`
+
 ## v0.5 (2018-09-14)
 
 * added empty label check

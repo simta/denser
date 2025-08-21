@@ -13,4 +13,5 @@ dnsr_err2string
 dnsr_perror
 dnsr_free
 dnsr_free_result
+dnsr_free_val
 dnsr_send_query
