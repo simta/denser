@@ -7,6 +7,7 @@ Release:        1%{?dist}
 License:        BSD
 URL:            http://its.umich.edu/
 Source0:        %{name}-%{version}.tar.xz
+BuildRequires:  gcc
 BuildRequires:  setup
 
 %description
